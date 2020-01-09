@@ -43,7 +43,7 @@ center_dim2 = zc;
 % pseudo-random 8 control points detemining ploygon's shape
 r = n/2 * dz; % basical radius with 3sigma principle
 
-savePath = '/share/home/liyinchu/DATA/fwd_forloop/dataset20200109/';
+savePath = '/share/home/liyinchu/DATA/fwd_forloop/dataset20200109_wellB/';
 if exist(savePath, 'dir') == 0; mkdir(savePath); end
 
 % (1) get connectivity
