@@ -41,8 +41,12 @@ Ex2 = potentialDiffs / E.electrodeSpacing;
 [potentialDiffs, ~, ~, ~] = getResNetDataRectMesh(nodeX,nodeY,nodeZ,potentials,[E.My E.Ny]);
 Ey2 = potentialDiffs / E.electrodeSpacing;
 
+% E_obs = [Ex2; Ey2];
+% 
+% save([savePath 'E_WellB_with_1stFrac.mat'], 'E_obs');
+
 %% Import E_initial
-Efield = load('E_initial_WellB.mat');
+Efield = load([savePath 'E_WellB_with_1stFrac.mat']);
 E_initial = Efield.E_obs;
 
 Ex1 = E_initial(1:length(dataLoc_x));

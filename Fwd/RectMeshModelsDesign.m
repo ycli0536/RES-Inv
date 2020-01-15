@@ -16,11 +16,11 @@ earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/500];
 casing_con = 5e6;
 
 % fracturing sheet
-fracLoc_origin = [300 300 -100 100 -1800 -2000];
-fracLoc_leftExp = [300 300 -200 100 -1800 -2000];
-fracLoc_rightExp = [300 300 -100 200 -1800 -2000];
-fracLoc_upExp = [300 300 -100 100 -1700 -2000];
-fracLoc_downExp = [300 300 -100 100 -1800 -2100];
+fracLoc_origin = [300 300 -50 50 -1800 -2000];
+fracLoc_leftExp = [300 300 -100 50 -1800 -2000];
+fracLoc_rightExp = [300 300 -50 100 -1800 -2000];
+fracLoc_upExp = [300 300 -50 50 -1750 -2000];
+fracLoc_downExp = [300 300 -50 50 -1800 -2050];
 fracCon = 250;
 
 % central well
