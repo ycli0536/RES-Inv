@@ -15,6 +15,14 @@ earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/500];
 
 casing_con = 5e6;
 
+% fracturing sheet
+fracLoc_origin = [300 300 -100 100 -1800 -2000];
+fracLoc_leftExp = [300 300 -200 100 -1800 -2000];
+fracLoc_rightExp = [300 300 -100 200 -1800 -2000];
+fracLoc_upExp = [300 300 -100 100 -1700 -2000];
+fracLoc_downExp = [300 300 -100 100 -1800 -2100];
+fracCon = 250;
+
 % central well
 well1Loc = [0     0    0   0    0  -1900;
             0  1000   0   0  -1900 -1900];
@@ -32,8 +40,8 @@ well3Loc = [0   0   -50   -50   0  -1900;
             0  500  -250  -250  -1900 -1900];
 well3Con = [casing_con; casing_con; casing_con];
 
-blkLoc = [earthLoc; well1Loc; well2Loc; well3Loc];
-blkCon = [earthCon; well1Con; well2Con; well3Con];
+blkLoc = [earthLoc; fracLoc_downExp; well1Loc; well2Loc; well3Loc];
+blkCon = [earthCon; fracCon; well1Con; well2Con; well3Con];
 
 % Some other mesh parameters
 coreVolume = [-400 400 -400 400  0  -2200];

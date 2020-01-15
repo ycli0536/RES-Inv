@@ -1,9 +1,8 @@
 
 %% initial
 
-savePath = 'D:/Yinchu Li/EMG/Code/Project_code_RES-Inv/Fwd/';
+savePath = 'D:/Yinchu Li/EMG_largeFiles/forloop_noProductionWell/directionalFluid/';
 
-% no Fracturing conductivity (fracCon and fracLoc)
 [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize] = RectMeshModelsDesign();
 dx = minSize(1);
 dy = minSize(2);
@@ -38,22 +37,26 @@ c = ce + cf + cc; % cc times 3 is important
 
 % get dc data in E-field
 [potentialDiffs, ~, ~, ~] = getResNetDataRectMesh(nodeX,nodeY,nodeZ,potentials,[E.Mx E.Nx]);
-Ex = potentialDiffs / E.electrodeSpacing;
+Ex2 = potentialDiffs / E.electrodeSpacing;
 [potentialDiffs, ~, ~, ~] = getResNetDataRectMesh(nodeX,nodeY,nodeZ,potentials,[E.My E.Ny]);
-Ey = potentialDiffs / E.electrodeSpacing;
+Ey2 = potentialDiffs / E.electrodeSpacing;
 
-E_obs = [Ex; Ey];
-
-save([savePath 'E_initial_WellB.mat'], 'E_obs');
-
-%% load E_initial
-
-% targetPath = 'D:/Yinchu Li/EMG/Code/Project_code_RES-Inv/Fwd/';
-targetPath = savePath;
-dataFile = 'E_initial_WellB.mat';
-E = load([targetPath dataFile]);
-E_initial = E.E_obs;
+%% Import E_initial
+Efield = load('E_initial_WellB.mat');
+E_initial = Efield.E_obs;
 
 Ex1 = E_initial(1:length(dataLoc_x));
 Ey1 = E_initial(length(dataLoc_y)+1:end);
 
+%% E field diff
+Fx = Ex2 - Ex1;
+Fy = Ey2 - Ey1;
+F_obs = [Fx; Fy];
+
+E_obs_DownExp = F_obs;
+
+% save([savePath 'E_origin_WellB.mat'], 'E_obs_origin');
+% save([savePath 'E_leftExp_WellB.mat'], 'E_obs_LeftExp');
+% save([savePath 'E_rightExp_WellB.mat'], 'E_obs_RightExp');
+% save([savePath 'E_upExp_WellB.mat'], 'E_obs_UpExp');
+save([savePath 'E_downExp_WellB.mat'], 'E_obs_DownExp');

@@ -173,7 +173,7 @@ label = [label; direction];
 end
 toc
 
-save([savePath 'Sheet#' num2str(k, '%02d') num2str(fracCon) '_fracCon' '.mat'], 'ShapeCollect', 'fracCons');
-save([savePath 'train#' num2str(k, '%02d') num2str(fracCon) '_fracCon' '.mat'], 'data', 'label');
+save([savePath 'Sheet#' num2str(k, '%02d') '_' num2str(fracCon) '_fracCon' '.mat'], 'ShapeCollect', 'fracCons');
+save([savePath 'train#' num2str(k, '%02d') '_' num2str(fracCon) '_fracCon' '.mat'], 'data', 'label');
 
 end
