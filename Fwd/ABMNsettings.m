@@ -1,13 +1,7 @@
-function [source, dataLoc, E_field] = ABMNsettings()
+function [dataLoc, E_field] = ABMNsettings(dataGrid)
 
-% source = [0 0 0 1; 
-%           10000 0 0 -1];
-% #### change +source location ####
-source = [0 50 0 1; 
-          10000 0 0 -1];
-
-dataGridX = -500:20:500;
-dataGridY = -500:20:500;
+dataGridX = dataGrid(1, :);
+dataGridY = dataGrid(2, :);
 Ndata = length(dataGridX) * length(dataGridY);
 [dataLocX, dataLocY] = meshgrid(dataGridX, dataGridY);
 dataLoc.X = dataLocX;
