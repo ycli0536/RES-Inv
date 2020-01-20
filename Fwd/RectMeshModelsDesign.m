@@ -1,4 +1,4 @@
-function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize] = RectMeshModelsDesign()
+function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize] = RectMeshModelsDesign(singleFracSheet_loc, singleFracCon)
 % 1. Design a forced rectangular mesh by setting some layout parameters
 % 2. Design conductivity models based on the mesh and conductivity settings 
 
@@ -9,19 +9,15 @@ earthLoc = [-inf inf -inf inf 0 -800;
             -inf inf -inf inf -1050 -1400;
             -inf inf -inf inf -1400 -1600;
             -inf inf -inf inf -1600 -1800;
-            -inf inf -inf inf -1800 -2100;
-            -inf inf -inf inf -2100 -inf];
+            -inf inf -inf inf -1800 -2000;
+            -inf inf -inf inf -2000 -inf];
 earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/500];
 
 casing_con = 5e6;
 
 % fracturing sheet
-fracLoc_origin = [300 300 -50 50 -1800 -2000];
-fracLoc_leftExp = [300 300 -100 50 -1800 -2000];
-fracLoc_rightExp = [300 300 -50 100 -1800 -2000];
-fracLoc_upExp = [300 300 -50 50 -1750 -2000];
-fracLoc_downExp = [300 300 -50 50 -1800 -2050];
-fracCon = 250;
+fracLoc = singleFracSheet_loc;
+fracCon = singleFracCon;
 
 % central well
 well1Loc = [0     0    0   0    0  -1900;
@@ -40,7 +36,7 @@ well3Loc = [0   0   -50   -50   0  -1900;
             0  500  -250  -250  -1900 -1900];
 well3Con = [casing_con; casing_con; casing_con];
 
-blkLoc = [earthLoc; fracLoc_downExp; well1Loc; well2Loc; well3Loc];
+blkLoc = [earthLoc; fracLoc; well1Loc; well2Loc; well3Loc];
 blkCon = [earthCon; fracCon; well1Con; well2Con; well3Con];
 
 % Some other mesh parameters

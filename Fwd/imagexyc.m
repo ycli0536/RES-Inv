@@ -75,7 +75,7 @@ ZI = cat(3,R,G,B);
 h = imagesc(left:spacing:right,bottom:spacing:top,ZI);
 % h = scatter(XI(:),YI(:),YI(:)*0+3,[reshape(ZI(:,:,1),[],1) reshape(ZI(:,:,2),[],1) reshape(ZI(:,:,3),[],1)]);
 set(h,'alphadata',~isnan(R));
-set(gca,'ydir','normal');
+set(gca,'ydir','reverse');
 axis equal;
 axis tight;
 
