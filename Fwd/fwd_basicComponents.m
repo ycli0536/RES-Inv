@@ -2,7 +2,8 @@
 %% initial
 clear
 % savePath = 'D:/Yinchu Li/EMG_largeFiles/forloop_noProductionWell/directionalFluid/';
-savePath = 'D:/data/forloop_noProductionWell/directionalFluid_500ohm_base/';
+% savePath = 'D:/data/forloop_noProductionWell/directionalFluid_500ohm_base/';
+% savePath = 'D:/data/forloop_noProductionWell/directionalFluid_-1/';
 
 % to test Yang's experiments in GEM 2019 Xi'an
 % savePath = 'D:/data/forloop_ProductionWell/directionalFluid/';
@@ -14,18 +15,19 @@ fracLoc_upExp = [300 300 -50 50 -1800 -1950];
 fracLoc_downExp = [300 300 -50 50 -1850 -2000];
 fracLoc_leftExp = [300 300 -100 50 -1850 -1950];
 fracLoc_rightExp = [300 300 -50 100 -1850 -1950];
-fracCon = 250;
+fracCon = 0;
 
-[nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize] = RectMeshModelsDesign(fracLoc_downExp, fracCon);
+[nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize] = RectMeshModelsDesign(fracLoc_origin, fracCon);
 dx = minSize(1);
 dy = minSize(2);
 dz = 0 - minSize(3);
 
-% source = [0 0 0 1; 
-%           10000 0 0 -1];
+source = [0 0 0 -1; % HSV? 
+          10000 0 0 1];
 % #### change source location ####
-source = [0 50 0 1; 
-          10000 0 0 -1];
+% source = [0 50 0 1; 
+%           10000 0 0 -1];
+
 dataGridX = -500:20:500;
 dataGridY = -500:20:500;
 dataGrid = [dataGridX; dataGridY];
