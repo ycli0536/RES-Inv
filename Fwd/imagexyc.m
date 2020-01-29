@@ -15,7 +15,7 @@ y = raw(:,2);
 re = raw(:,3);
 im = raw(:,4);
 amp = sqrt(re.^2+im.^2);
-ang = atan2(re,im) / pi; % range from -1 to 1
+ang = atan2(re,-im) / pi; % range from -1 to 1
 
 % understand input
 if isempty(spacing)
@@ -66,8 +66,8 @@ hsv(hsv>1) = 1;
 hsv(hsv<0) = 0;
 rgb = hsv2rgb(hsv);
 R = reshape(rgb(:,1),size(XI));
-G = reshape(rgb(:,2),size(XI));
-B = reshape(rgb(:,3),size(XI));
+B = reshape(rgb(:,2),size(XI));
+G = reshape(rgb(:,3),size(XI));
 ZI = cat(3,R,G,B);
 
 
@@ -75,7 +75,7 @@ ZI = cat(3,R,G,B);
 h = imagesc(left:spacing:right,bottom:spacing:top,ZI);
 % h = scatter(XI(:),YI(:),YI(:)*0+3,[reshape(ZI(:,:,1),[],1) reshape(ZI(:,:,2),[],1) reshape(ZI(:,:,3),[],1)]);
 set(h,'alphadata',~isnan(R));
-set(gca,'ydir','reverse');
+set(gca,'ydir','normal');
 axis equal;
 axis tight;
 
