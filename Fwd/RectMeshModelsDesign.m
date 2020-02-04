@@ -11,9 +11,10 @@ earthLoc = [-inf inf -inf inf 0 -800;
             -inf inf -inf inf -1600 -1800;
             -inf inf -inf inf -1800 -2000;
             -inf inf -inf inf -2000 -inf];
-earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/200];
+earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/500];
+% earthCon = [1/500; 1/500; 1/500; 1/500; 1/500; 1/500; 1/500];
 
-casing_con = 0;
+casing_con = 5e6;
 
 % fracturing sheet
 fracLoc = singleFracSheet_loc;
