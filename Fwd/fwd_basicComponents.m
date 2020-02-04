@@ -4,7 +4,7 @@ clear
 % savePath = 'D:/Yinchu Li/EMG_largeFiles/forloop_noProductionWell/directionalFluid/';
 % savePath = 'D:/data/forloop_noProductionWell/directionalFluid_500ohm_base/';
 % savePath = 'D:/data/forloop_ProductionWell/directionalFluid_verticalComp/';
-savePath = 'D:/data/forloop_ProductionWell/directionalFluid_singleWell/';
+savePath = 'D:/data/forloop_ProductionWell/directionalFluid_2Wells/';
 
 % to test Yang's experiments in GEM 2019 Xi'an
 % savePath = 'D:/data/forloop_ProductionWell/directionalFluid/';
@@ -70,10 +70,10 @@ Ey2 = potentialDiffs / E.electrodeSpacing;
 % save([savePath 'E_WellB_with_1stFrac.mat'], 'E_obs');
 % save([savePath 'E_WellA_with_1stFrac.mat'], 'E_obs');
 % save([savePath 'E_WellA_with_1stFrac_500ohmBase.mat'], 'E_obs');
-% save([savePath 'E_1Well_with_1stFrac.mat'], 'E_obs');
+% save([savePath 'E_2Wells_with_1stFrac.mat'], 'E_obs');
 
 %% Import E_initial
-Efield = load([savePath 'E_1Well_with_1stFrac.mat']);
+Efield = load([savePath 'E_2Wells_with_1stFrac.mat']);
 E_initial = Efield.E_obs;
 
 Ex1 = E_initial(1:length(dataLoc_x));
@@ -93,7 +93,7 @@ E_obs_rightExp = F_obs;
 
 % save([savePath 'E_downExp_WellA_500ohmBase.mat'], 'E_obs_downExp');
 
-% save([savePath 'E_leftExp_1Well.mat'], 'E_obs_leftExp');
-save([savePath 'E_rightExp_1Well.mat'], 'E_obs_rightExp');
-% save([savePath 'E_upExp_1Well.mat'], 'E_obs_upExp');
-% save([savePath 'E_downExp_1Well.mat'], 'E_obs_downExp');
+% save([savePath 'E_leftExp_2Wells.mat'], 'E_obs_leftExp');
+save([savePath 'E_rightExp_2Wells.mat'], 'E_obs_rightExp');
+% save([savePath 'E_upExp_2Wells.mat'], 'E_obs_upExp');
+% save([savePath 'E_downExp_2Wells.mat'], 'E_obs_downExp');

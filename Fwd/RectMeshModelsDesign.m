@@ -37,8 +37,8 @@ well3Loc = [0   0   -50   -50   0  -1900;
             0  500  -250  -250  -1900 -1900];
 well3Con = [casing_con; casing_con; casing_con];
 
-blkLoc = [earthLoc; fracLoc; well1Loc];
-blkCon = [earthCon; fracCon; well1Con];
+blkLoc = [earthLoc; fracLoc; well1Loc; well2Loc];
+blkCon = [earthCon; fracCon; well1Con; well2Con];
 
 % Some other mesh parameters
 coreVolume = [-400 400 -400 400  0  -2200];

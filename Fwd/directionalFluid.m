@@ -24,11 +24,11 @@ dataLoc_y = dataLocY(:);
 % load([dataPath 'E_upExp_WellB.mat'])
 % load([dataPath 'E_downExp_WellB.mat'])
 
-dataPath = 'D:/data/forloop_ProductionWell/directionalFluid_singleWell/';
-load([dataPath 'E_upExp_1Well.mat'])
-load([dataPath 'E_downExp_1Well.mat'])
-load([dataPath 'E_leftExp_1Well.mat'])
-load([dataPath 'E_rightExp_1Well.mat'])
+dataPath = 'D:/data/forloop_ProductionWell/directionalFluid_2Wells/';
+load([dataPath 'E_upExp_2Wells.mat'])
+load([dataPath 'E_downExp_2Wells.mat'])
+load([dataPath 'E_leftExp_2Wells.mat'])
+load([dataPath 'E_rightExp_2Wells.mat'])
 
 data = [E_obs_upExp'; E_obs_downExp'; E_obs_leftExp'; E_obs_rightExp'];
 
@@ -38,7 +38,7 @@ data = [E_obs_upExp'; E_obs_downExp'; E_obs_leftExp'; E_obs_rightExp'];
 % data = [E_obs_upExp'; E_obs_downExp'];
 
 reso = 20;
-cutoff = [1e-10 1e-6];
+cutoff = [1e-11 1e-6];
 % figure; histogram(log10(abs(data)))
 for i = 1:4
     figure;
