@@ -34,7 +34,12 @@ for i = 1:5
                          reso,'',cutoff,'log');
     hold on;
     levellist = -15:0.5:-3;
-    contour(dataLocX, dataLocY, ...
-            reshape(log10(sqrt(data(i, 1:length(dataLoc_x)).^2+ data(i, length(dataLoc_y)+1:end).^2)),51,51), ...
-            'showtext','on','levellist',levellist,'linecolor','k');
+    [ct, h] = contour(dataLoc.X, dataLoc.Y, reshape(log10(sqrt(data(1:length(dataLoc_x)).^2+ data(length(dataLoc_y)+1:end).^2)),51,51), 'linecolor','k');
+    clabel(ct,h, levellist, 'FontSize',15,'Color','k')
+    clim = caxis;
+    c = colorbar('Ticks',[linspace(clim(1),clim(2),7)], 'TickLabels',{'-180','-120','-60','0','60','120','180'});
+    c.Label.String = 'degree';
+    c.Label.Rotation = 0;
+    c.Label.Position = [0.5 -1.25 0];
+    colormap(hsv)
 end
