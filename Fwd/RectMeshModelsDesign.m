@@ -11,7 +11,7 @@ earthLoc = [-inf inf -inf inf 0 -800;
             -inf inf -inf inf -1600 -1800;
             -inf inf -inf inf -1800 -2000;
             -inf inf -inf inf -2000 -inf];
-earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/500];
+earthCon = [1/80; 1/20; 1/500; 1/30; 1/200; 1/30; 1/200];
 % earthCon = [1/500; 1/500; 1/500; 1/500; 1/500; 1/500; 1/500];
 
 casing_con = 5e6;
@@ -37,8 +37,8 @@ well3Loc = [0   0   -50   -50   0  -1900;
             0  500  -250  -250  -1900 -1900];
 well3Con = [casing_con; casing_con; casing_con];
 
-blkLoc = [earthLoc; fracLoc; well1Loc; well2Loc; well3Loc];
-blkCon = [earthCon; fracCon; well1Con; well2Con; well3Con];
+blkLoc = [earthLoc; fracLoc; well1Loc];
+blkCon = [earthCon; fracCon; well1Con];
 
 % Some other mesh parameters
 coreVolume = [-400 400 -400 400  0  -2200];

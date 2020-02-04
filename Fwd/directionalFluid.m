@@ -24,23 +24,29 @@ dataLoc_y = dataLocY(:);
 % load([dataPath 'E_upExp_WellB.mat'])
 % load([dataPath 'E_downExp_WellB.mat'])
 
-% data = [E_obs_upExp'; E_obs_downExp'; E_obs_leftExp'; E_obs_rightExp'];
+dataPath = 'D:/data/forloop_ProductionWell/directionalFluid_singleWell/';
+load([dataPath 'E_upExp_1Well.mat'])
+load([dataPath 'E_downExp_1Well.mat'])
+load([dataPath 'E_leftExp_1Well.mat'])
+load([dataPath 'E_rightExp_1Well.mat'])
 
-dataPath = 'D:/data/forloop_ProductionWell/directionalFluid_verticalComp/';
-load([dataPath 'E_upExp_WellA_500ohmBase.mat'])
-load([dataPath 'E_downExp_WellA_500ohmBase.mat'])
-data = [E_obs_upExp'; E_obs_downExp'];
+data = [E_obs_upExp'; E_obs_downExp'; E_obs_leftExp'; E_obs_rightExp'];
+
+% dataPath = 'D:/data/forloop_ProductionWell/directionalFluid_verticalComp/';
+% load([dataPath 'E_upExp_WellA_500ohmBase.mat'])
+% load([dataPath 'E_downExp_WellA_500ohmBase.mat'])
+% data = [E_obs_upExp'; E_obs_downExp'];
 
 reso = 20;
-cutoff = [1e-11 1e-6];
+cutoff = [1e-10 1e-6];
 % figure; histogram(log10(abs(data)))
-for i = 1:2
+for i = 1:4
     figure;
     [~, ~, ~, ZI] = imagexyc([dataLoc_x dataLoc_y data(i, 1:length(dataLoc_x))' data(i, length(dataLoc_y)+1:end)'], ...
                          reso,'',cutoff,'log');
     hold on;
-    levellist = -15:0.5:-3;
-    [ct, h] = contour(dataLocX, dataLocY, reshape(log10(sqrt(data(i, 1:length(dataLoc_x)).^2+ data(i, length(dataLoc_y)+1:end).^2)),51,51), 'linecolor','k');
+    levellist = -10:0.5:-3;
+    [ct, h] = contour(dataLocX, dataLocY, reshape(log10(sqrt(data(i, 1:length(dataLoc_x)).^2+ data(i, length(dataLoc_y)+1:end).^2)),51,51), 'LevelStep',0.5, 'linecolor','k');
     clabel(ct,h, levellist, 'FontSize',14,'Color','k')
     clim = caxis;
     c = colorbar('Ticks',linspace(clim(1),clim(2),7), 'TickLabels',{'-180','-120','-60','0','60','120','180'});
