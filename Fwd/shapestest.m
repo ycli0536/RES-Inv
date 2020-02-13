@@ -3,12 +3,28 @@
 fracCon = 225;
 fracLoc = [300 300 -200 200 -1700 -2100];
 
-[nodeX, nodeY, nodeZ, edgeCon, ~, cellCon, minSize] = RectMeshModelsDesign();
+[nodeX, nodeY, nodeZ, edgeCon, ~, cellCon, minSize] = RectMeshModelsDesign(fracLoc, fracCon);
 dx = minSize(1);
 dy = minSize(2);
 dz = 0 - minSize(3);
 
-[source, dataLoc, E] = ABMNsettings();
+dataGridX = -500:20:500;
+dataGridY = -500:20:500;
+dataGrid = [dataGridX; dataGridY];
+
+source = [0 0 0 1;
+          10000 0 0 -1];
+[dataLoc, E] = ABMNsettings(dataGrid);
+
+% An example of SheetShape
+SheetShape = [0                 -1806.83220194333;
+67.7845677696635	-1832.21543223034;
+149.656586926182	-1900;
+103.921939540776	-2003.92193954078;
+0	                -2047.23974711432;
+-86.5380173427082	-1986.53801734271;
+-59.7504359104987	-1900;
+-87.6161552547786	-1812.38384474522];
 
 dataLocX = dataLoc.X;
 dataLocY = dataLoc.Y;
