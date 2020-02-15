@@ -2,7 +2,7 @@ function C = casing_Con(miniSize, casing_con_base, depth_max, loop_num)
     % miniSize = 50;
     % casing_con_base = 5e6;
     % depth_max = 1500;
-    % loop_num = 100;
+    % loop_num = 30000;
     
     blk_num = depth_max/miniSize;
     max_num_segments = 8;
@@ -23,6 +23,6 @@ function C = casing_Con(miniSize, casing_con_base, depth_max, loop_num)
     end
     % save Cell data C
     data_name = 'casing_Loc_Con.mat';
-    save(data_name, 'C');
+    save(data_name, 'C', 'num_segments');
     fprintf('data savePATH: %s\\%s \n', pwd, data_name);
 end
