@@ -183,6 +183,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+
+### data or processes ###
 # lsf job
 *.err
 *.out
+
+# matlab data
+*.mat
