@@ -190,4 +190,5 @@ $RECYCLE.BIN/
 *.out
 
 # matlab data
+casing_Con_profiles/
 *.mat
