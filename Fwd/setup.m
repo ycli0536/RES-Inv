@@ -1,4 +1,4 @@
-function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize, source, dataLoc, E] = setup(Config_file)
+function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize, source, dataLoc, E] = setup(Config_file, count)
 
 RectMeshModelsDesign = config_parser(Config_file, 'RectMeshModelsDesign');
 ABMN = config_parser(Config_file, 'ABMNsettings');
@@ -7,12 +7,14 @@ Mesh = config_parser(Config_file, 'Mesh');
 %---Setup
 earthLoc = RectMeshModelsDesign.earthLoc;
 earthCon = RectMeshModelsDesign.earthCon;
-wellLoc = RectMeshModelsDesign.wellLoc;
-casing_con = RectMeshModelsDesign.casing_con;
-wellCon = ones(size(wellLoc, 1), 1)*casing_con;
 
-blkLoc = [earthLoc; wellLoc];
-blkCon = [earthCon; wellCon];
+casing_data = load(RectMeshModelsDesign.casing_data_file);
+C = casing_data.C;
+casingLoc = C{count, 1}(:, 1:6);
+casingCon = C{count, 1}(:, 7);
+
+blkLoc = [earthLoc; casingLoc];
+blkCon = [earthCon; casingCon];
 
 coreVolume = Mesh.coreVolume;
 minSize = Mesh.minSize;
