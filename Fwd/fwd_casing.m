@@ -1,10 +1,11 @@
 
 %% initial
 clear
-parpool(24);
+parpool(32);
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
-savePath = PATH.savePath_HPC;
+% savePath = PATH.savePath_HPC;
+savePath = '/share/home/liyinchu/DATA/fwd_casing/'
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 
 [nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E] = setup(Config_file, 1);
@@ -53,5 +54,5 @@ tic
         data = [data; E_obs'];
     end
     toc
-    save([savePath 'Casing#' num2str(k, '%02d') '_casingCon' '.mat'], 'E_obs');
+    save([savePath 'Casing#' num2str(k, '%02d') '_casingCon' '.mat'], 'data');
 end
