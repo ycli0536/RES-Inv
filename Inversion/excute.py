@@ -12,7 +12,7 @@ import time
 import shutil
 import json
 
-tf.debugging.set_log_device_placement(True)
+# tf.debugging.set_log_device_placement(True)
 
 gConfig = {}
 gConfig = getConfig.get_config(config_file='config.ini')
@@ -58,7 +58,7 @@ def lr_schedule(epoch):
 
 def creat_model():
     model = fcnModel(input_shape=input_shape)
-    model = model.createModel(input_shape=input_shape)
+    model = model.createModel()
     return model
 
 
@@ -140,7 +140,7 @@ def predict(test_data, model_path):
         print('Best test (' + lf + '): ', scores[id])
 
 
-# if __name__ == '__main__':
-#     gConfig = getConfig.get_config()
-#     if gConfig['mode'] == 'train':
-#         train()
+if __name__ == '__main__':
+    gConfig = getConfig.get_config()
+    if gConfig['mode'] == 'train':
+        train()

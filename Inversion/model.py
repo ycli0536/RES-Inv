@@ -1,8 +1,8 @@
 import getConfig
 from tensorflow.keras.layers import Activation, BatchNormalization, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, LeakyReLU
-from tensorflow.keras.layers import UpSampling2D
-from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import UpSampling2D, concatenate
+from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
 
@@ -53,57 +53,82 @@ def fcn(input_shape, num_filters_in=32):
       blocks (convolution + batch normalization + ReLU).
     """
 
-    inputs = Input(input_shape)
+    inputs = Input(input_shape)  # [51 51 3]
 
     conv1 = con_block(inputs, num_filters=num_filters_in)
-    conv1 = con_block(conv1, num_filters=num_filters_in)
-    conv1 = con_block(conv1, num_filters=num_filters_in)
+    # [51 51 32]
+    conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
+    # [51 51 32]
     drop1 = Dropout(rate=dr)(conv1)
+    # [49 49 32]
     pool1 = MaxPooling2D((2, 2))(drop1)
+    # [24 24 32]
     num_filters_in *= 2
 
     conv2 = con_block(pool1, num_filters=num_filters_in)
+    # [24 24 64]
     conv2 = con_block(conv2, num_filters=num_filters_in)
-    conv2 = con_block(conv2, num_filters=num_filters_in)
+    # [24 24 64]
     drop2 = Dropout(rate=dr)(conv2)
+    # [24 24 64]
     pool2 = MaxPooling2D((2, 2))(drop2)
+    # [12 12 64]
     num_filters_in *= 2
 
-    conv3 = con_block(pool2, num_filters=num_filters_in, padding='valid')
+    conv3 = con_block(pool2, num_filters=num_filters_in)
+    # [12 12 128]
     conv3 = con_block(conv3, num_filters=num_filters_in)
-    conv3 = con_block(conv3, num_filters=num_filters_in)
-    drop3 = Dropout(dr)(conv3)
+    # [12 12 128]
+    drop3 = Dropout(rate=dr)(conv3)
+    # [12 12 128]
+    pool3 = MaxPooling2D((2, 2))(drop3)
+    # [6 6 128]
+    num_filters_in *= 2
+
+    conv4 = con_block(pool3, num_filters=num_filters_in)
+    # [6 6 256]
+    conv4 = con_block(conv4, num_filters=num_filters_in)
+    # [6 6 256]
+    drop4 = Dropout(rate=dr)(conv4)
+    # [6 6 256]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
-    up4 = UpSampling2D(size=(2, 2))(drop3)
-    conv4 = con_block(up4, num_filters=num_filters_in)
-    conv4 = con_block(conv4, num_filters=num_filters_in)
-    conv4 = con_block(conv4, num_filters=num_filters_in)
-    num_filters_in /= 2
-    num_filters_in = int(num_filters_in)
-
-    up5 = UpSampling2D(size=(2, 2))(conv4)
-    conv5 = con_block(up5, num_filters=num_filters_in)
+    up5 = UpSampling2D(size=(2, 2))(drop4)
+    # [12 12 256]
+    merge5 = concatenate([conv3, up5], axis=3)
+    # [12 12 256+128=384]
+    conv5 = con_block(merge5, num_filters=num_filters_in)
+    # [12 12 64]
     conv5 = con_block(conv5, num_filters=num_filters_in)
-    conv5 = con_block(conv5, num_filters=num_filters_in)
+    # [12 12 64]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
     up6 = UpSampling2D(size=(2, 2))(conv5)
-    conv6 = con_block(up6, num_filters=num_filters_in)
+    # [24 24 64]
+    merge6 = concatenate([conv2, up6], axis=3)
+    # [24 24 64+128=192]
+    conv6 = con_block(merge6, num_filters=num_filters_in)
+    # [24 24 32]
     conv6 = con_block(conv6, num_filters=num_filters_in)
-    conv6 = con_block(conv6, num_filters=num_filters_in)
-    num_filters_in /= 2
-    num_filters_in = int(num_filters_in)
+    # [24 24 32]
+    conv7 = con_block(conv6, num_filters=2)
 
-    conv7 = con_block(conv6, num_filters=num_filters_in)
-    num_filters_in /= 4
-    num_filters_in = int(num_filters_in)
-    conv7 = con_block(conv7, num_filters=num_filters_in)
-    conv7 = con_block(conv7, num_filters=1)
+    # num_filters_in /= 2
+    # num_filters_in = int(num_filters_in)
 
-    model = Model(inputs=inputs, outputs=conv7)
+    # up7 = UpSampling2D(size=(2, 2))(conv6)
+    # # [48 48 32]
+    # conv7 = con_block(up7, num_filters=num_filters_in)
+    # # [48 48 16]
+    # conv7 = con_block(conv7, num_filters=1)
+    # # [48 48 1]
+
+    x = Flatten()(conv7)
+    output = Dense(gConfig['target_value_length'], activation='relu')(x)
+
+    model = Model(inputs=inputs, outputs=output)
 
     return model
 
