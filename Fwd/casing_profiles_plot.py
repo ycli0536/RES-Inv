@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
 from scipy.io import loadmat
 
 import argparse
@@ -16,13 +15,7 @@ import os
 
 def plot_casing_prof(images_range, data, savePath):
     for i in range(images_range):
-        # plot profile
-        # for j in range(num_segments[i, 0]-1, -1, -1):
-        #     casingCon = data[i][0][:, 6]
-        #     casingCon_prifle[np.where(depths >= data[i][0][j, 5])] = casingCon[j]
-        # plt.plot(casingCon_prifle, depths)
-
-        depth = np.append(data[i][0][0, 5], data[i][0][:, 5])
+        depth = np.append(0, data[i][0][:, 5])
         casing_con = np.append(data[i][0][0, 6], data[i][0][:, 6])
 
         fig, ax = plt.subplots(figsize=(2, 3))
@@ -33,7 +26,7 @@ def plot_casing_prof(images_range, data, savePath):
         # ax.set_ylim(-1500, 0)
         # ax.set_xlim(300, 510)
 
-        ax.ticklabel_format(axis='x', style='sci', scilimits=(0,1))
+        ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 1))
         ax.xaxis.get_offset_text().set_fontsize(8)
         ax.tick_params(labelsize=8)
 
@@ -42,18 +35,20 @@ def plot_casing_prof(images_range, data, savePath):
         ax.set_title('Conducitivity of caisng', fontsize=10)
 
         ax.grid()
-        fig.savefig(os.path.join(savePath, '%05d' %i + "casing_profile.png"), dpi=300, bbox_inches='tight')
+        fig.savefig(os.path.join(savePath, '%05d' % i + "casing_profile.png"), dpi=300, bbox_inches='tight')
 
 
 def target_generator(data, num_segments, Maxdepth, miniSize):
     length_of_vector = (0 - Maxdepth) / miniSize + 1
     depths = np.linspace(0, Maxdepth, int(length_of_vector))
-    casingCon = np.empty_like(depths)
+    target_data = []
     for i in range(np.size(data)):
+        casingCon = np.empty_like(depths)
         for j in range(num_segments[i, 0]-1, -1, -1):
             casingCon_nodes = data[i][0][:, 6]
             casingCon[np.where(depths >= data[i][0][j, 5])] = casingCon_nodes[j]
-    return casingCon
+        target_data.append(casingCon)
+    return target_data
 
 
 def main():
@@ -79,6 +74,8 @@ def main():
                                     num_segments=num_segments,
                                     Maxdepth=Maxdepth,
                                     miniSize=2)
+    # print(np.shape(train_target))
+    # print(np.shape(train_target[0]))
     np.save(os.path.join(os.getcwd(), 'train_target'), train_target)
 
     if args.save:
