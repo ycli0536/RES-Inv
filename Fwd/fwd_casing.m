@@ -4,8 +4,8 @@ clear
 parpool(32);
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
-% savePath = PATH.savePath_HPC;
-savePath = '/share/home/liyinchu/DATA/fwd_casing/'
+savePath = PATH.savePath_HPC;
+% savePath = '/share/home/liyinchu/DATA/fwd_casing/'
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 
 [nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E] = setup(Config_file, 1);
@@ -25,7 +25,7 @@ G = formPotentialDifferenceMatrix(edges);
 s = formSourceNearestNodes(nodes,source);
 
 BatchSize = 1000;
-BatchNumber = 29;
+BatchNumber = 30;
 start_id = 1:BatchSize:1 + BatchNumber * BatchSize;
 
 for k = 1:BatchNumber
