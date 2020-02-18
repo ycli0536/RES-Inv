@@ -5,6 +5,7 @@ from tensorflow.keras.layers import UpSampling2D, concatenate
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
+import tensorflow as tf
 
 
 # initializing a dic containing configure parameters
@@ -137,8 +138,14 @@ class fcnModel(object):
     def __init__(self, input_shape):
         self.input_shape = input_shape
 
-    def createModel(self, summary=False):
-        fcn_model = fcn(input_shape=self.input_shape)
+    def createModel(self, summary=False, multi_gpu=False):
+        if multi_gpu:
+            print("Training using multiple GPUs..")
+            strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
+            with strategy.scope():
+                fcn_model = fcn(input_shape=self.input_shape)
+        else:
+            fcn_model = fcn(input_shape=self.input_shape)
         fcn_model.compile(loss='mean_squared_error',
                           optimizer=Adam(lr=0.001),
                           metrics=['mean_squared_error'])
