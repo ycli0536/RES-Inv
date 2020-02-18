@@ -45,6 +45,17 @@ def plot_casing_prof(images_range, data, savePath):
         fig.savefig(os.path.join(savePath, '%05d' %i + "casing_profile.png"), dpi=300, bbox_inches='tight')
 
 
+def target_generator(data, num_segments, Maxdepth, miniSize):
+    length_of_vector = (0 - Maxdepth) / miniSize + 1
+    depths = np.linspace(0, Maxdepth, int(length_of_vector))
+    casingCon = np.empty_like(depths)
+    for i in range(np.size(data)):
+        for j in range(num_segments[i, 0]-1, -1, -1):
+            casingCon_nodes = data[i][0][:, 6]
+            casingCon[np.where(depths >= data[i][0][j, 5])] = casingCon_nodes[j]
+    return casingCon
+
+
 def main():
     parser = argparse.ArgumentParser(description='python code plotting casing conductivity profiles for check',
                                      epilog="Yinchu Li 02/15/2020")
@@ -62,6 +73,13 @@ def main():
     print('Total number of samples: %d' % (np.size(data)))
     Maxdepth = min(data[0][0][:, 5])
     print('Max depth is: %.2fm' % Maxdepth)
+
+    num_segments = loadmat(dataPATH)["num_segments"]
+    train_target = target_generator(data=data,
+                                    num_segments=num_segments,
+                                    Maxdepth=Maxdepth,
+                                    miniSize=2)
+    np.save(os.path.join(os.getcwd(), 'train_target'), train_target)
 
     if args.save:
         if args.outputPATH:

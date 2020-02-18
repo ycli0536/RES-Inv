@@ -192,3 +192,6 @@ $RECYCLE.BIN/
 # matlab data
 casing_Con_profiles/
 *.mat
+
+# numpy data
+*.npy
