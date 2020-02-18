@@ -58,7 +58,7 @@ def lr_schedule(epoch):
 
 def creat_model():
     model = fcnModel(input_shape=input_shape)
-    model = model.createModel()
+    model = model.createModel(summary=True)
     return model
 
 
@@ -76,58 +76,58 @@ def movefile(file, src_path, dst_path):
 
 def train():
     model = creat_model()
-    models_dir = os.path.join(gConfig['modelpath'], 'saved_models')
-    model_name = gConfig['model_name_prefix'] + '.{epoch:03d}.h5'
-    if not os.path.isdir(models_dir):
-        os.makedirs(models_dir)
-    filepath = os.path.join(models_dir, model_name)
-    checkpoint = ModelCheckpoint(filepath=filepath,
-                                 monitor='val_loss',
-                                 mode='min',
-                                 verbose=1,
-                                 save_best_only=True)
+    # models_dir = os.path.join(gConfig['modelpath'], 'saved_models')
+    # model_name = gConfig['model_name_prefix'] + '.{epoch:03d}.h5'
+    # if not os.path.isdir(models_dir):
+    #     os.makedirs(models_dir)
+    # filepath = os.path.join(models_dir, model_name)
+    # checkpoint = ModelCheckpoint(filepath=filepath,
+    #                              monitor='val_loss',
+    #                              mode='min',
+    #                              verbose=1,
+    #                              save_best_only=True)
 
-    lr_scheduler = LearningRateScheduler(lr_schedule)
+    # lr_scheduler = LearningRateScheduler(lr_schedule)
 
-    lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
-                                   cooldown=0,
-                                   patience=5,
-                                   min_lr=0.5e-6)
+    # lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+    #                                cooldown=0,
+    #                                patience=5,
+    #                                min_lr=0.5e-6)
 
-    callbacks = [checkpoint, lr_reducer, lr_scheduler]
+    # callbacks = [checkpoint, lr_reducer, lr_scheduler]
 
-    start_time = time.time()
-    history = model.fit(X_train, y_train,
-                        batch_size=gConfig['batch_size'],
-                        epochs=gConfig['epochs'],
-                        validation_data=(X_vail, y_vail),
-                        shuffle=True,
-                        callbacks=callbacks)
-    duration = time.time() - start_time
-    print(duration)
+    # start_time = time.time()
+    # history = model.fit(X_train, y_train,
+    #                     batch_size=gConfig['batch_size'],
+    #                     epochs=gConfig['epochs'],
+    #                     validation_data=(X_vail, y_vail),
+    #                     shuffle=True,
+    #                     callbacks=callbacks)
+    # duration = time.time() - start_time
+    # print(duration)
 
-    model_info_dir = os.path.join(gConfig['modelpath'], 'models')
-    time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
-    Model_info = 'Model' + time_info
-    info_path = os.path.join(model_info_dir, Model_info)
-    if not os.path.isdir(info_path):
-        os.makedirs(info_path)
+    # model_info_dir = os.path.join(gConfig['modelpath'], 'models')
+    # time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
+    # Model_info = 'Model' + time_info
+    # info_path = os.path.join(model_info_dir, Model_info)
+    # if not os.path.isdir(info_path):
+    #     os.makedirs(info_path)
 
-    # save last one model either overfitting or underfitting
-    last_model_name = gConfig['model_name_prefix'] + '.%03d.h5' % gConfig['epochs']
-    model.save(os.path.join(info_path, last_model_name))
+    # # save last one model either overfitting or underfitting
+    # last_model_name = gConfig['model_name_prefix'] + '.%03d.h5' % gConfig['epochs']
+    # model.save(os.path.join(info_path, last_model_name))
 
-    # move best model to target folder
-    filelist = os.listdir(models_dir)
-    filelist.sort()
-    movefile(filelist[-1], models_dir, info_path)
-    shutil.rmtree(models_dir)
+    # # move best model to target folder
+    # filelist = os.listdir(models_dir)
+    # filelist.sort()
+    # movefile(filelist[-1], models_dir, info_path)
+    # shutil.rmtree(models_dir)
 
-    # save history information
-    jsObj = json.dumps(history.history, cls=MyEncoder)
-    fileObject = open(info_path + '/history_%s.json' % time_info, 'w')
-    fileObject.write(jsObj)
-    fileObject.close()
+    # # save history information
+    # jsObj = json.dumps(history.history, cls=MyEncoder)
+    # fileObject = open(info_path + '/history_%s.json' % time_info, 'w')
+    # fileObject.write(jsObj)
+    # fileObject.close()
 
 
 def predict(test_data, model_path):

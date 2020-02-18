@@ -45,7 +45,7 @@ def con_block(inputs,
     return x
 
 
-def fcn(input_shape, num_filters_in=32):
+def fcn_unet(input_shape, num_filters_in=32):
     """ Fully Convolutional Network
 
      The network consists of 5 levels
@@ -114,7 +114,7 @@ def fcn(input_shape, num_filters_in=32):
     # [24 24 32]
     conv6 = con_block(conv6, num_filters=num_filters_in)
     # [24 24 32]
-    conv7 = con_block(conv6, num_filters=2)
+    conv7 = con_block(conv6, num_filters=1)
 
     # num_filters_in /= 2
     # num_filters_in = int(num_filters_in)
@@ -134,6 +134,63 @@ def fcn(input_shape, num_filters_in=32):
     return model
 
 
+def fcn(input_shape, num_filters_in=32):
+    """ Fully Convolutional Network
+
+     The network consists of 5 levels
+     (2 max pooling and 3 upscaling)
+     each having three convolutional
+      blocks (convolution + batch normalization + ReLU).
+    """
+
+    inputs = Input(input_shape)  # [51 51 3]
+
+    conv1 = con_block(inputs, num_filters=num_filters_in)
+    # [51 51 32]
+    conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
+    # [51 51 32]
+    drop1 = Dropout(rate=dr)(conv1)
+    # [49 49 32]
+    pool1 = MaxPooling2D((2, 2))(drop1)
+    # [24 24 32]
+    num_filters_in *= 2
+
+    conv2 = con_block(pool1, num_filters=num_filters_in)
+    # [24 24 64]
+    conv2 = con_block(conv2, num_filters=num_filters_in)
+    # [24 24 64]
+    drop2 = Dropout(rate=dr)(conv2)
+    # [24 24 64]
+    pool2 = MaxPooling2D((2, 2))(drop2)
+    # [12 12 64]
+    num_filters_in *= 2
+
+    conv3 = con_block(pool2, num_filters=num_filters_in)
+    # [12 12 128]
+    conv3 = con_block(conv3, num_filters=num_filters_in)
+    # [12 12 128]
+    drop3 = Dropout(rate=dr)(conv3)
+    # [12 12 128]
+    pool3 = MaxPooling2D((2, 2))(drop3)
+    # [6 6 128]
+    num_filters_in *= 2
+
+    conv4 = con_block(pool3, num_filters=num_filters_in)
+    # [6 6 256]
+    conv4 = con_block(conv4, num_filters=num_filters_in)
+    # [6 6 256]
+    drop4 = Dropout(rate=dr)(conv4)
+    # [6 6 256]
+
+    conv5 = con_block(drop4, num_filters=16)
+    x = Flatten()(conv5)
+    output = Dense(gConfig['target_value_length'], activation='relu')(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    return model
+
+
 class fcnModel(object):
     def __init__(self, input_shape):
         self.input_shape = input_shape
@@ -143,9 +200,9 @@ class fcnModel(object):
             print("Training using multiple GPUs..")
             strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
             with strategy.scope():
-                fcn_model = fcn(input_shape=self.input_shape)
+                fcn_model = fcn_unet(input_shape=self.input_shape)
         else:
-            fcn_model = fcn(input_shape=self.input_shape)
+            fcn_model = fcn_unet(input_shape=self.input_shape)
         fcn_model.compile(loss='mean_squared_error',
                           optimizer=Adam(lr=0.001),
                           metrics=['mean_squared_error'])

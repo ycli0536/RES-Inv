@@ -73,7 +73,7 @@ def main():
     train_target = target_generator(data=data,
                                     num_segments=num_segments,
                                     Maxdepth=Maxdepth,
-                                    miniSize=2)
+                                    miniSize=10)
     # print(np.shape(train_target))
     # print(np.shape(train_target[0]))
     np.save(os.path.join(os.getcwd(), 'train_target'), train_target)
