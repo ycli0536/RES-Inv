@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, R
 
 from data_generation import data_preprocessing
 import getConfig
+import configparser
 import os
 import time
 import shutil
@@ -76,7 +77,7 @@ def movefile(file, src_path, dst_path):
 
 def train():
     model = creat_model()
-    models_dir = os.path.join(gConfig['modelpath'], 'saved_models')
+    models_dir = os.path.join(gConfig['infopath'], 'saved_models')
     model_name = gConfig['model_name_prefix'] + '.{epoch:03d}.h5'
     if not os.path.isdir(models_dir):
         os.makedirs(models_dir)
@@ -106,7 +107,7 @@ def train():
     duration = time.time() - start_time
     print(duration)
 
-    model_info_dir = os.path.join(gConfig['modelpath'], 'models')
+    model_info_dir = os.path.join(gConfig['infopath'], 'models')
     time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
     Model_info = 'Model' + time_info
     info_path = os.path.join(model_info_dir, Model_info)
@@ -129,12 +130,24 @@ def train():
     fileObject.write(jsObj)
     fileObject.close()
 
+    # save ini in model folder
+    parser = configparser.ConfigParser()
+    parser.read('config.ini')
+    parser.set('strings', 'predictionPath', info_path)
+    parser.write(open('config.ini', 'w'))
+    shutil.copyfile('config.ini', os.path.join(info_path, 'config.ini'))
+
 
 def predict(test_data, model_path):
-    model = load_model(model_path)
+    modelList = os.listdir(model_path)
+    model = load_model(modelList[0])
     X_test = test_data[0]
     y_test = test_data[1]
     scores = model.evaluate(X_test, y_test, batch_size=gConfig['batch_size'], verbose=1)
+
+    y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
+    np.save(os.path.join(gConfig['predictionpath'], 'y_pred'), y_pred)
+    np.y_test(os.path.join(gConfig['predictionpath'], 'y_test'), y_test)
 
     for id, lf in enumerate(model.metrics_names):
         print('Best test (' + lf + '): ', scores[id])
@@ -144,3 +157,5 @@ if __name__ == '__main__':
     gConfig = getConfig.get_config()
     if gConfig['mode'] == 'train':
         train()
+    if gConfig['mode'] == 'predict':
+        predict((X_test, y_test), gConfig['predictionpath'])
