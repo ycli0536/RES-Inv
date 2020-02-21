@@ -82,3 +82,5 @@ save([savePath 'diff_data.mat'], 'data');
 % save([savePath 'E_rightExp_2Wells.mat'], 'E_obs_rightExp');
 % save([savePath 'E_upExp_2Wells.mat'], 'E_obs_upExp');
 % save([savePath 'E_downExp_2Wells.mat'], 'E_obs_downExp');
+
+copyfile('ModelsDesign.ini', savePath)
