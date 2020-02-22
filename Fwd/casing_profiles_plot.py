@@ -58,7 +58,7 @@ def main():
     # 2 ways: 1. with path; 2. without path
     parser.add_argument("-s", "--save", action="store_true",
                         help="save all or not")
-    parser.add_argument("-op", "--outputPATH", action="store_true",
+    parser.add_argument("-op", "--outputPATH", type=str,
                         help="the path to put the profile images, default saving path is ./profiles")
     args = parser.parse_args()
 
@@ -79,10 +79,13 @@ def main():
     np.save(os.path.join(os.getcwd(), 'train_target'), train_target)
 
     if args.save:
-        if args.outputPATH:
+        if args.outputPATH is not None:
+            savePath = os.path.abspath(args.outputPATH)
+            if not os.path.isdir(savePath):
+                os.makedirs(savePath)
             plot_casing_prof(images_range=np.size(data),
                              data=data,
-                             savePath=os.path.abspath(args.outputPATH))
+                             savePath=savePath)
         else:
             savePath = os.path.join(os.getcwd(), 'casing_Con_profiles')
             if not os.path.isdir(savePath):
