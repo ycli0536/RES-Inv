@@ -44,6 +44,7 @@ Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
 G = formPotentialDifferenceMatrix(edges);
 s = formSourceNearestNodes(nodes,source);
 
+diff_data = [];
 data = [];
 for i=1:MaxCount
     [~, ~, ~, edgeCon, faceCon, cellCon, minSize, ~, ~, E, ~] = setup(Config_file, i);
@@ -63,13 +64,17 @@ for i=1:MaxCount
 
     if i == 1
         E_obs = [Ex; Ey];
+        data = E_obs';
     else
-        F_obs = [Ex; Ey] - E_obs;
-        data = [data; F_obs'];
+        E_obs2 = [Ex; Ey];
+        F_obs = E_obs2 - E_obs;
+        data = [data; E_obs2'];
+        diff_data = [diff_data; F_obs'];
     end
 end
 
-save([savePath 'diff_data.mat'], 'data');
+save([savePath 'diff_data_1.mat'], 'diff_data');
+save([savePath 'data_1.mat'], 'data');
 
 % save([savePath 'E_leftExp_WellB.mat'], 'E_obs_leftExp');
 % save([savePath 'E_rightExp_WellB.mat'], 'E_obs_rightExp');
