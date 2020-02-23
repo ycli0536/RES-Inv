@@ -1,16 +1,23 @@
 clear
 
+Config_file = 'ModelsDesign.ini';
+PATH = config_parser(Config_file, 'PATH');
+savePath = PATH.savePath_PC;
+if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+
 miniSize = 50;
-casing_con_par = [1e6 2e6 3e6 4e6];
+casing_con_par = 1e4;
 casing_con_base = 5e6;
 num_segments = 10;
-fractor = 1.2;
 th = zeros(1, num_segments);
 nodes = zeros(1, num_segments+1);
-th(1) = 2;
 nodes(1) = 0;
+
+% factor = 1.2;
+factor = 1;
+th(1) = 3;
 for i=2:num_segments
-    th(i) = th(i-1) * fractor;
+    th(i) = th(i-1) * factor;
     temp = round(th(i-1));
     nodes(i) = nodes(i-1) - temp * miniSize;
 end
@@ -37,6 +44,6 @@ end
 
 num_segments = ones(length(casing_con_par)*num_segments+1, 1); % k-1
 % save Cell data C and num_segments
-data_name = 'casing_Loc_Con_test.mat';
-save(data_name, 'C', 'num_segments');
-fprintf('data savePATH: %s\\%s \n', pwd, data_name);
+data_name = 'casing_Loc_Con_test_1.mat';
+save([savePath data_name], 'C', 'num_segments');
+fprintf('data savePATH: %s \n', [savePath data_name]);
