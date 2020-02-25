@@ -8,7 +8,7 @@ savePath = PATH.savePath_HPC;
 % savePath = '/share/home/liyinchu/DATA/fwd_casing/'
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 
-[nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E] = setup(Config_file, 1);
+[nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E, MaxCount] = setup(Config_file, 1);
 % for parfor
 dataLoc_x = dataLoc.X(:);
 dataLoc_y = dataLoc.Y(:);
@@ -24,16 +24,16 @@ Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
 G = formPotentialDifferenceMatrix(edges);
 s = formSourceNearestNodes(nodes,source);
 
-BatchSize = 1000;
-BatchNumber = 30;
+BatchNumber = 2;
+BatchSize = MaxCount/BatchNumber;
 start_id = 1:BatchSize:1 + BatchNumber * BatchSize;
 
 for k = 1:BatchNumber
-end_id = start_id(k) + BatchSize - 1;
-data = [];
-tic
+    end_id = start_id(k) + BatchSize - 1;
+    data = [];
+    tic
     parfor i = start_id(k):end_id
-        [~, ~, ~, edgeCon, faceCon, cellCon, minSize, ~, dataLoc, E] = setup(Config_file, i);
+        [~, ~, ~, edgeCon, faceCon, cellCon, minSize, ~, dataLoc, E, ~] = setup(Config_file, i);
 
         % (3) total conductance
         ce = Edge2Edge * edgeCon; % on edges
