@@ -6,13 +6,6 @@ import argparse
 import os
 
 
-# target path (default path: pwd)
-# [-f] file name
-# [-o] output path
-# [-s] save or not
-# [-plt] show certain profile
-
-
 def plot_casing_prof(images_range, data, savePath):
     for i in range(images_range):
         depth = np.append(0, data[i][0][:, 5])
@@ -53,13 +46,15 @@ def target_generator(data, num_segments, Maxdepth, miniSize):
 
 def main():
     parser = argparse.ArgumentParser(description='python code plotting casing conductivity profiles for check',
-                                     epilog="Yinchu Li 02/15/2020")
+                                     epilog="Created in 02/15/2020, last modified in 02/25/2020 by Yinchu Li")
     parser.add_argument("filename", help="please input data file")
     # 2 ways: 1. with path; 2. without path
     parser.add_argument("-s", "--save", action="store_true",
                         help="save all or not")
     parser.add_argument("-op", "--outputPATH", type=str,
                         help="the path to put the profile images, default saving path is ./profiles")
+    parser.add_argument("-g", "--generationPATH", type=str,
+                        help="the path to put the target data, default saveing path is ./labels")
     args = parser.parse_args()
 
     dataPATH = os.path.abspath(args.filename)
@@ -69,14 +64,19 @@ def main():
     Maxdepth = min(data[0][0][:, 5])
     print('Max depth is: %.2fm' % Maxdepth)
 
-    num_segments = loadmat(dataPATH)["num_segments"]
-    train_target = target_generator(data=data,
-                                    num_segments=num_segments,
-                                    Maxdepth=Maxdepth,
-                                    miniSize=10)
-    # print(np.shape(train_target))
-    # print(np.shape(train_target[0]))
-    np.save(os.path.join(os.getcwd(), 'train_target'), train_target)
+    if args.generationPATH is not None:
+        num_segments = loadmat(dataPATH)["num_segments"]
+        train_target = target_generator(data=data,
+                                        num_segments=num_segments,
+                                        Maxdepth=Maxdepth,
+                                        miniSize=10)
+        targetPath = os.path.join(os.path.abspath(args.generationPATH), 'labels')
+        print('target path is :', targetPath)
+        if not os.path.isdir(targetPath):
+            os.makedirs(targetPath)
+        # print(np.shape(train_target))
+        # print(np.shape(train_target[0]))
+        np.save(os.path.join(targetPath, 'train_target'), train_target)
 
     if args.save:
         if args.outputPATH is not None:

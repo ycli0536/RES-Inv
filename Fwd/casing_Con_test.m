@@ -6,44 +6,42 @@ savePath = PATH.savePath_PC;
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 
 miniSize = 50;
-casing_con_par = 1e4;
 casing_con_base = 5e6;
-num_segments = 10;
-th = zeros(1, num_segments);
-nodes = zeros(1, num_segments+1);
-nodes(1) = 0;
+depth_max = 2000;
+blk_num = depth_max/miniSize;
+nodes = -(0:blk_num) * miniSize;
+step = 2;
 
-% factor = 1.2;
-factor = 1;
-th(1) = 3;
-for i=2:num_segments
-    th(i) = th(i-1) * factor;
-    temp = round(th(i-1));
-    nodes(i) = nodes(i-1) - temp * miniSize;
+casing_con_par = [1e2, 5e2, 1e3, 5e3, 1e4, 5e4, 1e5, 5e5, 1e6]; % degree of corrosion/damage
+ths = 1:6; % length of corrosion/damage part
+depths_length = zeros(1, length(ths));
+for i = 1:length(ths)
+    depths_top = 1:step:blk_num - ths(i); % depth of corrosion/damage part
+    depths_length(i) = length(depths_top);
 end
-th = round(th);
-mesh_num = sum(th);
-depth_max = -miniSize * mesh_num;
-nodes(end) = depth_max;
 
-C = cell(length(casing_con_par) * num_segments + 1, 1);
-casingLoc = [zeros(num_segments, 4) nodes(1:end-1)' nodes(2:end)'];
-casingCon = casing_con_base * ones(num_segments, 1);
-% casingCon_ini = casing_con_par(end); % (casing_con_base)
+num = length(casing_con_par) * sum(depths_length) + 1;
+C = cell(num, 1);
+casingLoc = [zeros(blk_num, 4) nodes(1:end-1)' nodes(2:end)'];
+casingCon = casing_con_base * ones(blk_num, 1);
 C{1, 1} = [casingLoc casingCon];
-k = 2;
+n = 2;
 
-for i=1:length(casing_con_par)
-    for j = 1:num_segments
-        casingCon = casing_con_base * ones(num_segments, 1);
-        casingCon(j) = casing_con_par(i);
-        C{k, 1} = [casingLoc casingCon];
-        k = k + 1;
+for i = 1:length(casing_con_par)
+    for j = 1:length(ths)
+        depths_top = 1:step:blk_num - ths(j); % depth of corrosion/damage part
+        for k = 1:length(depths_top)
+            casingCon = casing_con_base * ones(blk_num, 1);
+            casingCon(depths_top(k):depths_top(k)+ths(j)-1) = casing_con_par(i);
+            C{n, 1} = [casingLoc casingCon];
+            n = n + 1;
+        end
     end
 end
 
-num_segments = ones(length(casing_con_par)*num_segments+1, 1); % k-1
+num_segments = blk_num * ones(num, 1); % n-1
 % save Cell data C and num_segments
-data_name = 'casing_Loc_Con_test_1.mat';
+data_name = PATH.data_file;
 save([savePath data_name], 'C', 'num_segments');
 fprintf('data savePATH: %s \n', [savePath data_name]);
+copyfile('ModelsDesign.ini', savePath)
