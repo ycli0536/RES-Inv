@@ -25,8 +25,6 @@ train_data, train_target = generator.read_data(dataPath=gConfig['datapath'],
                                                num_images=gConfig['num_images'],
                                                im_dim=gConfig['im_dim'],
                                                num_channels=gConfig['num_channels'])
-# an accident
-train_target = train_target[0:29000]
 
 print('train_data shape: ', train_data.shape)
 print('train_target shape: ', train_target.shape)
