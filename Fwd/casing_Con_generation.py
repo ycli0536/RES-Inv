@@ -33,6 +33,7 @@ def plot_casing_prof(images_range, data, savePath):
 
 def target_generator(data, num_segments, Maxdepth, miniSize):
     length_of_vector = (0 - Maxdepth) / miniSize + 1
+    print('miniSize is %.2fm, target value length is %d' %(miniSize, length_of_vector))
     depths = np.linspace(0, Maxdepth, int(length_of_vector))
     target_data = []
     for i in range(np.size(data)):
@@ -60,6 +61,7 @@ def main():
     dataPATH = os.path.abspath(args.filename)
     print("Data path is: " + dataPATH)
     data = loadmat(dataPATH)["C"]
+    data = data[1:]
     print('Total number of samples: %d' % (np.size(data)))
     Maxdepth = min(data[0][0][:, 5])
     print('Max depth is: %.2fm' % Maxdepth)
@@ -69,7 +71,7 @@ def main():
         train_target = target_generator(data=data,
                                         num_segments=num_segments,
                                         Maxdepth=Maxdepth,
-                                        miniSize=10)
+                                        miniSize=50)
         targetPath = os.path.join(os.path.abspath(args.generationPATH), 'labels')
         print('target path is :', targetPath)
         if not os.path.isdir(targetPath):
