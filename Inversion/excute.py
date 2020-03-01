@@ -132,20 +132,24 @@ def train():
     parser = configparser.ConfigParser()
     parser.read('config.ini')
     parser.set('strings', 'predictionPath', info_path)
+    parser.set('strings', 'model_name', last_model_name)
     parser.write(open('config.ini', 'w'))
     shutil.copyfile('config.ini', os.path.join(info_path, 'config.ini'))
+    print('model_name created in config file')
+    print('corresponding config file path is %s' % (os.path.join(info_path, 'config.ini')))
 
 
-def predict(test_data, model_path):
-    modelList = os.listdir(model_path)
-    model = load_model(modelList[0])
+def predict(test_data, model_path, model_name):
+    targetModel = os.path.join(model_path, model_name)
+    print('target model path is: %s' % (targetModel))
+    model = load_model(targetModel)
     X_test = test_data[0]
     y_test = test_data[1]
     scores = model.evaluate(X_test, y_test, batch_size=gConfig['batch_size'], verbose=1)
 
     y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
-    np.save(os.path.join(gConfig['predictionpath'], 'y_pred'), y_pred)
-    np.y_test(os.path.join(gConfig['predictionpath'], 'y_test'), y_test)
+    np.save(os.path.join(model_path, 'y_pred_' + model_name), y_pred)
+    np.save(os.path.join(model_path, 'y_test_' + model_name), y_test)
 
     for id, lf in enumerate(model.metrics_names):
         print('Best test (' + lf + '): ', scores[id])
@@ -156,4 +160,4 @@ if __name__ == '__main__':
     if gConfig['mode'] == 'train':
         train()
     if gConfig['mode'] == 'predict':
-        predict((X_test, y_test), gConfig['predictionpath'])
+        predict((X_test, y_test), gConfig['predictionpath'], gConfig['model_name'])
