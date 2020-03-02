@@ -20,16 +20,28 @@ gConfig = getConfig.get_config(config_file='config.ini')
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
 generator = data_preprocessing()
-train_data, train_target = generator.read_data(dataPath=gConfig['datapath'],
-                                               labelPath=gConfig['labelpath'],
-                                               num_images=gConfig['num_images'],
-                                               im_dim=gConfig['im_dim'],
-                                               num_channels=gConfig['num_channels'])
-
-print('train_data shape: ', train_data.shape)
-print('train_target shape: ', train_target.shape)
-input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
-
+if gConfig['input_format'] == '1d':
+    train_data, train_target = generator.read_data_2d(
+                               dataPath=gConfig['datapath'],
+                               labelPath=gConfig['labelpath'],
+                               num_images=gConfig['num_images'],
+                               im_dim=gConfig['im_dim'],
+                               num_channels=gConfig['num_channels']
+                               )
+    print('train_data shape: ', train_data.shape)
+    print('train_target shape: ', train_target.shape)
+    input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
+elif gConfig['input_format'] == '2d':
+    train_data, train_target = generator.read_data_1d(
+                               dataPath=gConfig['datapath'],
+                               data_file=gConfig['1d_file_name'],
+                               labelPath=gConfig['labelpath']
+                               )
+    print('train_data shape: ', train_data.shape)
+    print('train_target shape: ', train_target.shape)
+    input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
+else:
+    print('--- Wrong input format! ---')
 
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):

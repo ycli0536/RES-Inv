@@ -33,14 +33,15 @@ def plot_casing_prof(images_range, data, savePath):
 
 def target_generator(data, num_segments, Maxdepth, miniSize):
     length_of_vector = (0 - Maxdepth) / miniSize + 1
-    print('miniSize is %.2fm, target value length is %d' %(miniSize, length_of_vector))
+    print('miniSize is %.2fm, target value length is %d (%d)' %(miniSize, length_of_vector, length_of_vector - 1))
     depths = np.linspace(0, Maxdepth, int(length_of_vector))
     target_data = []
     for i in range(np.size(data)):
         casingCon = np.empty_like(depths)
-        for j in range(num_segments[i, 0]-1, -1, -1):
+        for j in range(num_segments[i + 1, 0]-1, -1, -1):
             casingCon_nodes = data[i][0][:, 6]
             casingCon[np.where(depths >= data[i][0][j, 5])] = casingCon_nodes[j]
+        casingCon = casingCon[0:-1]
         target_data.append(casingCon)
     return target_data
 
@@ -61,14 +62,14 @@ def main():
     dataPATH = os.path.abspath(args.filename)
     print("Data path is: " + dataPATH)
     data = loadmat(dataPATH)["C"]
-    data = data[1:]
-    print('Total number of samples: %d' % (np.size(data)))
+    target_data = data[1:]
+    print('Total number of samples: %d' % (np.size(target_data)))
     Maxdepth = min(data[0][0][:, 5])
     print('Max depth is: %.2fm' % Maxdepth)
 
     if args.generationPATH is not None:
         num_segments = loadmat(dataPATH)["num_segments"]
-        train_target = target_generator(data=data,
+        train_target = target_generator(data=target_data,
                                         num_segments=num_segments,
                                         Maxdepth=Maxdepth,
                                         miniSize=50)
