@@ -1,11 +1,13 @@
 import getConfig
 from tensorflow.keras.layers import Activation, BatchNormalization, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, LeakyReLU
+from tensorflow.keras.layers import Conv1D, MaxPooling1D
 from tensorflow.keras.layers import UpSampling2D, concatenate
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 
 # initializing a dic containing configure parameters
@@ -13,6 +15,10 @@ gConfig = {}
 gConfig = getConfig.get_config(config_file='config.ini')
 dr = gConfig['dropout_rate']
 leakyReLU_alpha = gConfig['leakyrelu_alpha']
+
+
+def root_mean_squared_error(y_true, y_pred):
+    return K.sqrt(K.mean(K.square(y_pred - y_true)))
 
 
 def con_block(inputs,
@@ -134,55 +140,78 @@ def fcn_unet(input_shape, num_filters_in=32):
     return model
 
 
-def fcn(input_shape, num_filters_in=32):
-    """ Fully Convolutional Network
+def con_block_1d(inputs,
+                 num_filters=16,
+                 kernel_size=3,
+                 strides=1,
+                 padding='same',
+                 activation='relu',
+                 batch_bormalization=True,
+                 dropout=False):
+    conv = Conv1D(num_filters,
+                  kernel_size=kernel_size,
+                  strides=strides,
+                  padding=padding,
+                  kernel_initializer='he_uniform')  # or glorot_uniform
 
-     The network consists of 5 levels
-     (2 max pooling and 3 upscaling)
-     each having three convolutional
-      blocks (convolution + batch normalization + ReLU).
-    """
+    x = inputs
+    x = conv(x)
 
-    inputs = Input(input_shape)  # [51 51 3]
+    if batch_bormalization:
+        x = BatchNormalization()(x)
+    if dropout:
+        x = Dropout(rate=dr)(x)
+    if activation is not None:
+        if activation == 'LeakyReLU':
+            x = LeakyReLU(alpha=leakyReLU_alpha)(x)
+        else:
+            x = Activation(activation)(x)
 
-    conv1 = con_block(inputs, num_filters=num_filters_in)
-    # [51 51 32]
-    conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
-    # [51 51 32]
+    return x
+
+
+def fcn_1d(input_shape, num_filters_in=16):
+
+    inputs = Input(input_shape)  # [51 1]
+
+    conv1 = con_block_1d(inputs, num_filters=num_filters_in)
+    # [51 16]
+    conv1 = con_block_1d(conv1, num_filters=num_filters_in, padding='valid')
+    # [51 16]
     drop1 = Dropout(rate=dr)(conv1)
-    # [49 49 32]
-    pool1 = MaxPooling2D((2, 2))(drop1)
-    # [24 24 32]
+    # [49 16]
+    pool1 = MaxPooling1D(2)(drop1)
+    # [24 16]
     num_filters_in *= 2
 
-    conv2 = con_block(pool1, num_filters=num_filters_in)
-    # [24 24 64]
-    conv2 = con_block(conv2, num_filters=num_filters_in)
-    # [24 24 64]
+    conv2 = con_block_1d(pool1, num_filters=num_filters_in)
+    # [24 32]
+    conv2 = con_block_1d(conv2, num_filters=num_filters_in)
+    # [24 32]
     drop2 = Dropout(rate=dr)(conv2)
-    # [24 24 64]
-    pool2 = MaxPooling2D((2, 2))(drop2)
-    # [12 12 64]
+    # [24 32]
+    pool2 = MaxPooling1D(2)(drop2)
+    # [12 32]
     num_filters_in *= 2
 
-    conv3 = con_block(pool2, num_filters=num_filters_in)
-    # [12 12 128]
-    conv3 = con_block(conv3, num_filters=num_filters_in)
-    # [12 12 128]
+    conv3 = con_block_1d(pool2, num_filters=num_filters_in)
+    # [12 64]
+    conv3 = con_block_1d(conv3, num_filters=num_filters_in)
+    # [12 64]
     drop3 = Dropout(rate=dr)(conv3)
-    # [12 12 128]
-    pool3 = MaxPooling2D((2, 2))(drop3)
-    # [6 6 128]
+    # [12 64]
+    pool3 = MaxPooling1D(2)(drop3)
+    # [6 64]
     num_filters_in *= 2
 
-    conv4 = con_block(pool3, num_filters=num_filters_in)
-    # [6 6 256]
-    conv4 = con_block(conv4, num_filters=num_filters_in)
-    # [6 6 256]
+    conv4 = con_block_1d(pool3, num_filters=num_filters_in)
+    # [6 128]
+    conv4 = con_block_1d(conv4, num_filters=num_filters_in)
+    # [6 128]
     drop4 = Dropout(rate=dr)(conv4)
-    # [6 6 256]
+    # [6 128]
 
-    conv5 = con_block(drop4, num_filters=16)
+    conv5 = con_block_1d(drop4, num_filters=16)
     x = Flatten()(conv5)
     output = Dense(gConfig['target_value_length'], activation='relu')(x)
 
@@ -195,17 +224,26 @@ class fcnModel(object):
     def __init__(self, input_shape):
         self.input_shape = input_shape
 
-    def createModel(self, summary=False, multi_gpu=False):
+    def createModel(self, summary=False,
+                    input_format=gConfig['input_format'],
+                    multi_gpu=False):
         if multi_gpu:
             print("Training using multiple GPUs..")
             strategy = tf.distribute.MirroredStrategy(cross_device_ops=tf.distribute.HierarchicalCopyAllReduce())
             with strategy.scope():
-                fcn_model = fcn_unet(input_shape=self.input_shape)
+                if input_format == '2d':
+                    fcn_model = fcn_unet(input_shape=self.input_shape)
+                elif input_format == '1d':
+                    fcn_model = fcn_1d(input_shape=self.input_shape)
         else:
-            fcn_model = fcn_unet(input_shape=self.input_shape)
-        fcn_model.compile(loss='mean_squared_error',
+            if input_format == '2d':
+                fcn_model = fcn_unet(input_shape=self.input_shape)
+            elif input_format == '1d':
+                fcn_model = fcn_1d(input_shape=self.input_shape)
+
+        fcn_model.compile(loss=gConfig['loss_function'],
                           optimizer=Adam(lr=0.001),
-                          metrics=['mean_squared_error'])
+                          metrics=[gConfig['loss_function']])
         if summary:
             fcn_model.summary()
         return fcn_model

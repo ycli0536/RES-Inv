@@ -72,7 +72,7 @@ def main():
         train_target = target_generator(data=target_data,
                                         num_segments=num_segments,
                                         Maxdepth=Maxdepth,
-                                        miniSize=50)
+                                        miniSize=10)
         targetPath = os.path.join(os.path.abspath(args.generationPATH), 'labels')
         print('target path is :', targetPath)
         if not os.path.isdir(targetPath):

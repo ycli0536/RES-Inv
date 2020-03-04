@@ -69,7 +69,7 @@ def lr_schedule(epoch):
 
 def creat_model():
     model = fcnModel(input_shape=input_shape)
-    model = model.createModel(summary=True)
+    model = model.createModel(summary=True, input_format=gConfig['input_format'])
     return model
 
 
