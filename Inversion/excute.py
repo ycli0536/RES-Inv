@@ -20,7 +20,7 @@ gConfig = getConfig.get_config(config_file='config.ini')
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
 generator = data_preprocessing()
-if gConfig['input_format'] == '1d':
+if gConfig['input_format'] == '2d':
     train_data, train_target = generator.read_data_2d(
                                dataPath=gConfig['datapath'],
                                labelPath=gConfig['labelpath'],
@@ -31,12 +31,13 @@ if gConfig['input_format'] == '1d':
     print('train_data shape: ', train_data.shape)
     print('train_target shape: ', train_target.shape)
     input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
-elif gConfig['input_format'] == '2d':
+elif gConfig['input_format'] == '1d':
     train_data, train_target = generator.read_data_1d(
                                dataPath=gConfig['datapath'],
                                data_file=gConfig['1d_file_name'],
                                labelPath=gConfig['labelpath']
                                )
+    train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], 1))
     print('train_data shape: ', train_data.shape)
     print('train_target shape: ', train_target.shape)
     input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
