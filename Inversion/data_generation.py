@@ -11,7 +11,7 @@ gConfig = getConfig.get_config(config_file='config.ini')
 
 
 class data_preprocessing(object):
-    def read_data_2d(self, dataPath, labelPath,
+    def read_data_2d(self, dataPath, labelPath, labelFile,
                      num_images, im_dim, num_channels,
                      subtract_pixel_mean=True):
         # load X_train (images)
@@ -28,17 +28,18 @@ class data_preprocessing(object):
             train_data_mean = np.mean(train_data, axis=0)
             train_data -= train_data_mean
 
-        # # load y_train (casingCon_vector/array)
-        train_target = np.load(os.path.join(labelPath, 'train_target.npy'))
+        # # load y_train (casingCon_array)
+        train_target = np.load(os.path.join(labelPath, labelFile))
         scaler = MinMaxScaler()
         train_target = scaler.fit_transform(train_target)
         return train_data, train_target
 
-    def read_data_1d(self, dataPath, data_file, labelPath):
+    def read_data_1d(self, dataPath, data_file, labelPath, labelFile):
         train_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
         scaler = MinMaxScaler()
-        # # load y_train (casingCon_vector/array)
-        train_target = np.load(os.path.join(labelPath, 'train_target.npy'))
+        # # load y_train (casingCon_vector)
+        train_target = np.load(os.path.join(labelPath, labelFile))
+        # only train_target need log transform (train_data: log10 data)
         train_data = scaler.fit_transform(train_data)
         train_target = scaler.fit_transform(train_target)
         return train_data, train_target

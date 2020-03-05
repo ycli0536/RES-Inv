@@ -24,6 +24,7 @@ if gConfig['input_format'] == '2d':
     train_data, train_target = generator.read_data_2d(
                                dataPath=gConfig['datapath'],
                                labelPath=gConfig['labelpath'],
+                               labelFile=gConfig['label_name'],
                                num_images=gConfig['num_images'],
                                im_dim=gConfig['im_dim'],
                                num_channels=gConfig['num_channels']
@@ -35,7 +36,8 @@ elif gConfig['input_format'] == '1d':
     train_data, train_target = generator.read_data_1d(
                                dataPath=gConfig['datapath'],
                                data_file=gConfig['1d_file_name'],
-                               labelPath=gConfig['labelpath']
+                               labelPath=gConfig['labelpath'],
+                               labelFile=gConfig['label_name']
                                )
     train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], 1))
     print('train_data shape: ', train_data.shape)
