@@ -31,7 +31,7 @@ def plot_casing_prof(images_range, data, savePath):
         fig.savefig(os.path.join(savePath, '%05d' % i + "casing_profile.png"), dpi=300, bbox_inches='tight')
 
 
-def target_generator(data, num_segments, Maxdepth, miniSize):
+def target_generator(data, num_segments, Maxdepth, miniSize, log10Flag=False):
     length_of_vector = (0 - Maxdepth) / miniSize + 1
     print('miniSize is %.2fm, target value length is %d (%d)' %(miniSize, length_of_vector, length_of_vector - 1))
     depths = np.linspace(0, Maxdepth, int(length_of_vector))
@@ -43,20 +43,25 @@ def target_generator(data, num_segments, Maxdepth, miniSize):
             casingCon[np.where(depths >= data[i][0][j, 5])] = casingCon_nodes[j]
         casingCon = casingCon[0:-1]
         target_data.append(casingCon)
-    return target_data
+    if log10Flag:
+        target_data = np.log10(target_data)
+        filename = 'target_data_log10'
+    else:
+        filename = 'target_data'
+    return target_data, filename
 
 
 def main():
     parser = argparse.ArgumentParser(description='python code plotting casing conductivity profiles for check',
-                                     epilog="Created in 02/15/2020, last modified in 02/25/2020 by Yinchu Li")
+                                     epilog="Created in 02/15/2020, last updated in 05/03/2020 by Yinchu Li")
     parser.add_argument("filename", help="please input data file")
     # 2 ways: 1. with path; 2. without path
     parser.add_argument("-s", "--save", action="store_true",
                         help="save all or not")
     parser.add_argument("-op", "--outputPATH", type=str,
-                        help="the path to put the profile images, default saving path is ./profiles")
+                        help="the root/home path to put the profile images, default saving path is ./profiles")
     parser.add_argument("-g", "--generationPATH", type=str,
-                        help="the path to put the target data, default saveing path is ./labels")
+                        help="the root/home path to put the target data, default saveing path is ./labels")
     args = parser.parse_args()
 
     dataPATH = os.path.abspath(args.filename)
@@ -69,17 +74,16 @@ def main():
 
     if args.generationPATH is not None:
         num_segments = loadmat(dataPATH)["num_segments"]
-        train_target = target_generator(data=target_data,
-                                        num_segments=num_segments,
-                                        Maxdepth=Maxdepth,
-                                        miniSize=10)
+        train_target, filename = target_generator(data=target_data,
+                                                  num_segments=num_segments,
+                                                  Maxdepth=Maxdepth,
+                                                  miniSize=10,
+                                                  log10Flag=True)
         targetPath = os.path.join(os.path.abspath(args.generationPATH), 'labels')
         print('target path is :', targetPath)
         if not os.path.isdir(targetPath):
             os.makedirs(targetPath)
-        # print(np.shape(train_target))
-        # print(np.shape(train_target[0]))
-        np.save(os.path.join(targetPath, 'train_target'), train_target)
+        np.save(os.path.join(targetPath, filename), train_target)
 
     if args.save:
         if args.outputPATH is not None:
