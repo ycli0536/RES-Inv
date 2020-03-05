@@ -2,7 +2,7 @@ clear
 
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
-dataPath = PATH.savePath_PC;
+dataPath = PATH.dataPath_PC;
 diff_data_plotPath = [dataPath '/diff_data_plot/'];
 if exist(diff_data_plotPath, 'dir') == 0;     mkdir(diff_data_plotPath);     end
 data_plotPath = [dataPath '/data_plot/'];
@@ -29,8 +29,8 @@ function loopplot_imagexyc(plotPath, data, cutoff)
     for i = 1:size(data, 1)
         amp = reshape(sqrt(data(i, 1:length(dataLoc_x)).^2+data(i, length(dataLoc_y)+1:end).^2),51,51);
         
-        figure_imagexyc(dataLocX, dataLocY, data, amp, i, reso)
-        figure_Aprofile(dataLocX, data, amp, i, k)
+        figure_imagexyc(plotPath, dataLocX, dataLocY, data, amp, i, reso)
+        figure_Aprofile(plotPath, dataLocX, data, amp, i, k)
     end
     
     fig3 = figure; % together
@@ -50,7 +50,7 @@ function loopplot_imagexyc(plotPath, data, cutoff)
 end
 
 
-function figure_imagexyc(dataLocX, dataLocY, data, amp, i, reso)
+function figure_imagexyc(plotPath, dataLocX, dataLocY, data, amp, i, reso)
     dataLoc_x = dataLocX(:);
     dataLoc_y = dataLocY(:);
     
@@ -72,7 +72,7 @@ function figure_imagexyc(dataLocX, dataLocY, data, amp, i, reso)
     colormap(hsv)
     saveas(fig_hsv, [plotPath '2D_HSV' num2str(i) '.png'])
 end
-function figure_Aprofile(dataLoc, data, amp, i, k)
+function figure_Aprofile(plotPath, dataLoc, data, amp, i, k)
     fig2 = figure;
     set(fig2, 'Visible', 'off', 'Units', 'Normalized', 'OuterPosition', [0, 0, 0.4, 1])
     semilogy(dataLoc(k, :), amp(k, :), '.-'); grid on %y = 0 profile
