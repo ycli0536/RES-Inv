@@ -46,6 +46,7 @@ elif gConfig['input_format'] == '1d':
 else:
     print('--- Wrong input format! ---')
 
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
