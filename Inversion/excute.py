@@ -47,6 +47,20 @@ else:
     print('--- Wrong input format! ---')
 
 
+def save_trainingData_np(save_path, train_data, vail_data):
+
+    X_train = train_data[0]
+    y_train = train_data[1]
+    X_vail = vail_data[0]
+    y_vail = vail_data[1]
+
+    np.save(os.path.join(save_path, 'X_vail'), X_vail)
+    np.save(os.path.join(save_path, 'y_vail'), y_vail)
+    np.save(os.path.join(save_path, 'X_train'), X_train)
+    np.save(os.path.join(save_path, 'y_train'), y_train)
+    print('All training data saved at: ', save_path)
+
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -160,6 +174,12 @@ def train():
     print('model_name created in config file')
     print('corresponding config file path is %s' % (os.path.join(info_path, 'config.ini')))
 
+    # save data in npy format
+    np.save(os.path.join(info_path, 'X_test'), X_test)
+    np.save(os.path.join(info_path, 'y_test'), y_test)
+    if gConfig['save_trainingdata']:
+        save_trainingData_np(info_path, (X_train, y_train), (X_vail, y_vail))
+
 
 def predict(test_data, model_path, model_name):
     targetModel = os.path.join(model_path, model_name)
@@ -171,7 +191,6 @@ def predict(test_data, model_path, model_name):
 
     y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
     np.save(os.path.join(model_path, 'y_pred_' + model_name), y_pred)
-    np.save(os.path.join(model_path, 'y_test_' + model_name), y_test)
 
     for id, lf in enumerate(model.metrics_names):
         print('Best test (' + lf + '): ', scores[id])
@@ -182,4 +201,9 @@ if __name__ == '__main__':
     if gConfig['mode'] == 'train':
         train()
     if gConfig['mode'] == 'predict':
-        predict((X_test, y_test), gConfig['predictionpath'], gConfig['model_name'])
+        X_test = np.load(os.path.join(gConfig['predictionpath'], 'X_test.npy'))
+        y_test = np.load(os.path.join(gConfig['predictionpath'], 'y_test.npy'))
+
+        predict(test_data=(X_test, y_test),
+                model_path=gConfig['predictionpath'],
+                model_name=gConfig['model_name'])
