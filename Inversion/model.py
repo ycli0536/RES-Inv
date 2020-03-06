@@ -241,9 +241,14 @@ class fcnModel(object):
             elif input_format == '1d':
                 fcn_model = fcn_1d(input_shape=self.input_shape)
 
-        fcn_model.compile(loss=gConfig['loss_function'],
-                          optimizer=Adam(lr=0.001),
-                          metrics=[gConfig['loss_function']])
+        if gConfig['loss_function'] == 'rmse':
+            fcn_model.compile(optimizer=Adam(lr=0.001),
+                              loss=tf.keras.metrics.mean_squared_error,
+                              metrics=[tf.keras.metrics.RootMeanSquaredError(name=gConfig['loss_function'])])
+        else:
+            fcn_model.compile(loss=gConfig['loss_function'],
+                              optimizer=Adam(lr=0.001),
+                              metrics=[gConfig['loss_function']])
         if summary:
             fcn_model.summary()
         return fcn_model

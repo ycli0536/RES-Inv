@@ -95,8 +95,14 @@ def train():
     if not os.path.isdir(models_dir):
         os.makedirs(models_dir)
     filepath = os.path.join(models_dir, model_name)
+
+    if gConfig['loss_function'] == 'rmse':
+        monitor = 'val_' + gConfig['loss_function']
+    else:
+        monitor = 'val_loss'
+
     checkpoint = ModelCheckpoint(filepath=filepath,
-                                 monitor='val_loss',
+                                 monitor=monitor,
                                  mode='min',
                                  verbose=1,
                                  save_best_only=True)
@@ -118,7 +124,7 @@ def train():
                         shuffle=True,
                         callbacks=callbacks)
     duration = time.time() - start_time
-    print(duration)
+    print('Duration time (s): ', duration)
 
     model_info_dir = os.path.join(gConfig['infopath'], 'models')
     time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
