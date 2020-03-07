@@ -145,7 +145,7 @@ def con_block_1d(inputs,
                  kernel_size=3,
                  strides=1,
                  padding='same',
-                 activation='relu',
+                 activation=tf.nn.relu,
                  batch_bormalization=True,
                  dropout=False):
     conv = Conv1D(num_filters,
@@ -177,10 +177,8 @@ def fcn_1d(input_shape, num_filters_in=16):
     conv1 = con_block_1d(inputs, num_filters=num_filters_in)
     # [51 16]
     conv1 = con_block_1d(conv1, num_filters=num_filters_in, padding='valid')
-    # [51 16]
-    drop1 = Dropout(rate=dr)(conv1)
     # [49 16]
-    pool1 = MaxPooling1D(2)(drop1)
+    pool1 = MaxPooling1D(2)(conv1)
     # [24 16]
     num_filters_in *= 2
 
@@ -188,9 +186,7 @@ def fcn_1d(input_shape, num_filters_in=16):
     # [24 32]
     conv2 = con_block_1d(conv2, num_filters=num_filters_in)
     # [24 32]
-    drop2 = Dropout(rate=dr)(conv2)
-    # [24 32]
-    pool2 = MaxPooling1D(2)(drop2)
+    pool2 = MaxPooling1D(2)(conv2)
     # [12 32]
     num_filters_in *= 2
 
@@ -198,9 +194,7 @@ def fcn_1d(input_shape, num_filters_in=16):
     # [12 64]
     conv3 = con_block_1d(conv3, num_filters=num_filters_in)
     # [12 64]
-    drop3 = Dropout(rate=dr)(conv3)
-    # [12 64]
-    pool3 = MaxPooling1D(2)(drop3)
+    pool3 = MaxPooling1D(2)(conv3)
     # [6 64]
     num_filters_in *= 2
 
@@ -208,12 +202,12 @@ def fcn_1d(input_shape, num_filters_in=16):
     # [6 128]
     conv4 = con_block_1d(conv4, num_filters=num_filters_in)
     # [6 128]
-    drop4 = Dropout(rate=dr)(conv4)
-    # [6 128]
 
-    conv5 = con_block_1d(drop4, num_filters=16)
-    x = Flatten()(conv5)
-    output = Dense(gConfig['target_value_length'], activation='relu')(x)
+    flatten = Flatten()(conv4)
+
+    drop = Dropout(rate=dr)(flatten)
+
+    output = Dense(gConfig['target_value_length'], activation=tf.nn.relu)(drop)
 
     model = Model(inputs=inputs, outputs=output)
 
