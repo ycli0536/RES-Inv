@@ -27,7 +27,7 @@ def con_block(inputs,
               strides=1,
               padding='same',
               activation='relu',
-              batch_bormalization=True,
+              batch_normalization=True,
               dropout=False):
     conv = Conv2D(num_filters,
                   kernel_size=kernel_size,
@@ -38,7 +38,7 @@ def con_block(inputs,
     x = inputs
     x = conv(x)
 
-    if batch_bormalization:
+    if batch_normalization:
         x = BatchNormalization()(x)
     if dropout:
         x = Dropout(rate=dr)(x)
@@ -106,9 +106,9 @@ def fcn_unet(input_shape, num_filters_in=32):
     merge5 = concatenate([conv3, up5], axis=3)
     # [12 12 256+128=384]
     conv5 = con_block(merge5, num_filters=num_filters_in)
-    # [12 12 64]
+    # [12 12 128]
     conv5 = con_block(conv5, num_filters=num_filters_in)
-    # [12 12 64]
+    # [12 12 128]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
