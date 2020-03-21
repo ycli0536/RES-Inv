@@ -1,4 +1,4 @@
-function [direction, SheetShape] = randomShape(r, center_dim1, center_dim2)
+function [direction, SheetShape] = randomShape(r, center_dim1, center_dim2, flag)
 
 % INPUT: r - basical radius with 3sigma principle
 %        center_dim1 - center location in first dimension
@@ -11,15 +11,20 @@ CtrlLengths = r * ( 1 + 1 / 3 * randn(1, 8) );
 CtrlLengths(CtrlLengths > 2*r) = 2*r;
 CtrlLengths(CtrlLengths < 0) = 0.01 * r;
 
-standard = std(CtrlLengths);
-average = mean(CtrlLengths);
-rightdiff = CtrlLengths - [CtrlLengths(2:end), CtrlLengths(1)];
-leftdiff = CtrlLengths - [CtrlLengths(end), CtrlLengths(1:end-1)];
-diff = abs([rightdiff;leftdiff]);
-[~, j] = find(diff - average >= 0);
-if length(unique(j))>=length(j) % normal shape
+if flg == 'screening'
+    standard = std(CtrlLengths);
+    average = mean(CtrlLengths);
+    rightdiff = CtrlLengths - [CtrlLengths(2:end), CtrlLengths(1)];
+    leftdiff = CtrlLengths - [CtrlLengths(end), CtrlLengths(1:end-1)];
+    diff = abs([rightdiff;leftdiff]);
+    [~, j] = find(diff - average >= 0);
+    if length(unique(j))>=length(j) % normal shape
+        points_generation = 0;
+    end
+elseif flag == 'noscreening'
     points_generation = 0;
 end
+
 % figure;
 % plot(CtrlLengths)
 end
