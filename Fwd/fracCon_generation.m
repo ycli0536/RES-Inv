@@ -1,4 +1,19 @@
-function [direction, SheetShape] = fracCon_generation(fracLoc, fracCon, minSize, count)
+clear
+
+Config_file = 'ModelsDesign_2d.ini';
+PATH = config_parser(Config_file, 'PATH');
+Mesh = config_parser(Config_file, 'Mesh');
+savePath = PATH.savePath_PC;
+if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+minSize = Mesh.minSize;
+
+fracLoc = [300 300 -200 200 -1700 -2100];
+fracCon = 250;
+count = 30000;
+[directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath);
+
+
+function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath)
 
 % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
 minSize(3) = - minSize(3);
@@ -40,43 +55,49 @@ for i = 1:length(nodes)
     fracturingLoc(i, index(2,2)) = nodes(i, 7);
 end
 
-%% randomShape generation
 center_dim1 = (fracLoc(index(1,1)) + fracLoc(index(1,2)))/2;
 center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 
-% pseudo-random 8 control points detemining ploygon's shape
-[direction, SheetShape] = randomShape(r, center_dim1, center_dim2);
-
-%% shape2coe
-Sheetpolygon = polyshape(SheetShape(:,1), SheetShape(:,2));
-
-fracturingCon = nan * ones(length(nodes), 1);
 C = cell(length(count),1);
 coe = cell(length(count),1);
+ShapeCollect = zeros(8, count*2);
+directions = [];
 for i = 1:count
-    areas = zeros(num_mesh, 1);
-    for j = 1:num_mesh
+    % randomShape generation
+    % pseudo-random 8 control points detemining ploygon's shape
+    [direction, SheetShape] = randomShape(r, center_dim1, center_dim2);
+    ShapeCollect(:, 2 * i - 1: 2 * i) = SheetShape;
+    directions = [directions; direction];
+    % shape2coe
+    Sheetpolygon = polyshape(SheetShape(:,1), SheetShape(:,2));
+    fracturingCon = nan * ones(length(nodes), 1);
+    for j = 1:length(nodes)
         polyout = intersect(meshlist(j), Sheetpolygon);
-        fracturingCon(j) = fracCon * area(polyout) / (minSize(objType))^2; % formula = fracCon(250) * (area/max_area(2500))
+        % formula = fracCon(250) * (area/max_area(2500))
+        fracturingCon(j) = fracCon * area(polyout) / abs(minSize(index(3,1)) * minSize(index(3,2)));
     end
     C{i,1} = [fracturingLoc fracturingCon];
     coe{i,1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
 
-%% plot test
+save([savePath 'SheetShape#' num2str(fracCon) '_fracCon.mat'], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
+% --plot test--
+% 
 % for i = 1:length(nodes)
 %     plot(meshlist(i))
 %     hold on
 %     axis equal
 %     axis([-200 200 -2100 -1700])
 % end
-% plot(Sheetpolygon)
-
-% figure; imagesc((-175:50:175), (-1725:-50:-2075), coe{1,1});
+% 
+% k = 5;
+% plot(polyshape(ShapeCollect(:, 2 * k - 1), ShapeCollect(:, 2 * k)))
+% figure; imagesc((-175:50:175), (-1725:-50:-2075), coe{k,1} * fracCon);
 % axis equal
 % axis tight
 % set(gca,'ydir','normal');
+% disp(directions(k))
 
 end
 
