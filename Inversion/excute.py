@@ -75,13 +75,14 @@ class MyEncoder(json.JSONEncoder):
 
 def lr_schedule(epoch):
     lr = 1e-3
-    # if epoch > 75:
-    #     lr *= 1e-3
-    # elif epoch > 50:
-    #     lr *= 1e-2
-    # elif epoch > 25:
-    #     lr *= 1e-1
-    print('Learning rate: ', lr)
+    if epoch > 800:
+        lr *= pow(5e-1, 4)
+    elif epoch > 600:
+        lr *= pow(5e-1, 3)
+    elif epoch > 400:
+        lr *= pow(5e-1, 2)
+    elif epoch > 200:
+        lr *= 5e-1
     return lr
 
 
@@ -106,7 +107,7 @@ def movefile(file, src_path, dst_path):
 def train():
     model = creat_model()
     models_dir = os.path.join(gConfig['infopath'], 'saved_models')
-    model_name = gConfig['model_name_prefix'] + '.{epoch:03d}.h5'
+    model_name = gConfig['model_name_prefix'] + '.{epoch:04d}.h5'
     if not os.path.isdir(models_dir):
         os.makedirs(models_dir)
     filepath = os.path.join(models_dir, model_name)
@@ -122,9 +123,10 @@ def train():
                                  verbose=1,
                                  save_best_only=True)
 
-    lr_scheduler = LearningRateScheduler(lr_schedule)
+    lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
 
-    lr_reducer = ReduceLROnPlateau(factor=np.sqrt(0.1),
+    lr_reducer = ReduceLROnPlateau(monitor=monitor,
+                                   factor=np.sqrt(0.1),
                                    cooldown=0,
                                    patience=5,
                                    min_lr=0.5e-6)
@@ -149,13 +151,13 @@ def train():
         os.makedirs(info_path)
 
     # save last one model either overfitting or underfitting
-    last_model_name = gConfig['model_name_prefix'] + '.%03d.h5' % gConfig['epochs']
+    last_model_name = gConfig['model_name_prefix'] + '.%04d.h5' % gConfig['epochs']
     model.save(os.path.join(info_path, last_model_name))
 
     # move best model to target folder
     filelist = os.listdir(models_dir)
     filelist.sort()
-    movefile(filelist[-1], models_dir, info_path)
+    movefile(filelist[-1], models_dir, info_path)  # must suit %04d
     shutil.rmtree(models_dir)
 
     # save history information
@@ -168,11 +170,12 @@ def train():
     parser = configparser.ConfigParser()
     parser.read('config.ini')
     parser.set('strings', 'predictionPath', info_path)
-    parser.set('strings', 'model_name', last_model_name)
+    parser.set('strings', 'model_name', filelist[-1])
+    parser.set('strings', 'mode', 'predict')
     parser.write(open('config.ini', 'w'))
     shutil.copyfile('config.ini', os.path.join(info_path, 'config.ini'))
     print('model_name created in config file')
-    print('corresponding config file path is %s' % (os.path.join(info_path, 'config.ini')))
+    print('corresponding config information saved at %s' % (os.path.join(info_path, 'config.ini')))
 
     # save data in npy format
     np.save(os.path.join(info_path, 'X_test'), X_test)
