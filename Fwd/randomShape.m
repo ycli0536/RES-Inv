@@ -1,8 +1,12 @@
-function [direction, SheetShape] = randomShape(r, center_dim1, center_dim2, flag)
+function [direction, SheetShape] = randomShape(r, center_dim1, center_dim2, screeningflag)
 
 % INPUT: r - basical radius with 3sigma principle
 %        center_dim1 - center location in first dimension
 %        center_dim2 - center location in second dimension
+
+if nargin==3
+    screeningflag = 'screening'; % default parameter
+end
 
 % 8 random points arranged clockwise
 points_generation = 1;
@@ -11,7 +15,7 @@ CtrlLengths = r * ( 1 + 1 / 3 * randn(1, 8) );
 CtrlLengths(CtrlLengths > 2*r) = 2*r;
 CtrlLengths(CtrlLengths < 0) = 0.01 * r;
 
-if flg == 'screening'
+if strcmpi(screeningflag,'screening')
     standard = std(CtrlLengths);
     average = mean(CtrlLengths);
     rightdiff = CtrlLengths - [CtrlLengths(2:end), CtrlLengths(1)];
@@ -21,7 +25,7 @@ if flg == 'screening'
     if length(unique(j))>=length(j) % normal shape
         points_generation = 0;
     end
-elseif flag == 'noscreening'
+elseif strcmpi(screeningflag,'noscreening')
     points_generation = 0;
 end
 
