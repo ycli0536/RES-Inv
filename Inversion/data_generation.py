@@ -36,7 +36,8 @@ class data_preprocessing(object):
 
     def read_data_1d(self, dataPath, data_file, labelPath, labelFile):
         train_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
-        scaler = MinMaxScaler()
+        feature_range = (0.001, 1)
+        scaler = MinMaxScaler(feature_range=feature_range)
         # # load y_train (casingCon_vector)
         train_target = np.load(os.path.join(labelPath, labelFile))
         # only train_target need log transform (train_data: log10 data)
@@ -46,7 +47,7 @@ class data_preprocessing(object):
         # set useless data after MinMaxScaler as 1.0 (max)
         index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
         for id in index:
-            train_target[:, int(id)] = 1
+            train_target[:, int(id)] = feature_range[1]
 
         return train_data, train_target
 

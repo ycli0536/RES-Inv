@@ -2,7 +2,7 @@ import getConfig
 from tensorflow.keras.layers import Activation, BatchNormalization, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, LeakyReLU
 from tensorflow.keras.layers import Conv1D, MaxPooling1D
-from tensorflow.keras.layers import UpSampling2D, concatenate
+from tensorflow.keras.layers import UpSampling2D, UpSampling1D, concatenate
 from tensorflow.keras.layers import Dropout, Flatten, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
@@ -174,8 +174,8 @@ def fcn_1d(input_shape, num_filters_in=16):
 
     inputs = Input(input_shape)  # [51 1]
 
-    conv1 = con_block_1d(inputs, num_filters=num_filters_in)
-    # [51 16]
+    conv1 = con_block_1d(inputs, num_filters=num_filters_in, kernel_size=2, padding='valid')
+    # [50 16]
     conv1 = con_block_1d(conv1, num_filters=num_filters_in, padding='valid')
     # [49 16]
     pool1 = MaxPooling1D(2)(conv1)
@@ -202,8 +202,41 @@ def fcn_1d(input_shape, num_filters_in=16):
     # [6 128]
     conv4 = con_block_1d(conv4, num_filters=num_filters_in)
     # [6 128]
+    num_filters_in /= 2
+    num_filters_in = int(num_filters_in)
 
-    flatten = Flatten()(conv4)
+    up5 = UpSampling1D(size=2)(conv4)
+    # [12 64]
+    merge5 = concatenate([conv3, up5], axis=2)
+    # [12 64+64=128]
+    conv5 = con_block_1d(merge5, num_filters=num_filters_in)
+    # [12 64]
+    conv5 = con_block_1d(conv5, num_filters=num_filters_in)
+    # [12 64]
+    num_filters_in /= 2
+    num_filters_in = int(num_filters_in)
+
+    up6 = UpSampling1D(size=2)(conv5)
+    # [24 32]
+    merge6 = concatenate([conv2, up6], axis=2)
+    # [24 32+32=64]
+    conv6 = con_block_1d(merge6, num_filters=num_filters_in)
+    # [24 32]
+    conv6 = con_block_1d(conv6, num_filters=num_filters_in)
+    # [24 32]
+    num_filters_in /= 2
+    num_filters_in = int(num_filters_in)
+
+    up7 = UpSampling1D(size=2)(conv6)
+    # [48 16]
+    merge7 = concatenate([conv1, up7], axis=2)
+    # [48 16+16=32]
+    conv7 = con_block_1d(merge7, num_filters=num_filters_in)
+    # [48 16]
+    conv7 = con_block_1d(conv7, num_filters=num_filters_in)
+    # [48 16]
+
+    flatten = Flatten()(conv7)
 
     drop = Dropout(rate=dr)(flatten)
 
