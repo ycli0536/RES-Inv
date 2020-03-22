@@ -9,11 +9,16 @@ minSize = Mesh.minSize;
 
 fracLoc = [300 300 -200 200 -1700 -2100];
 fracCon = 250;
-count = 30000;
-[directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath);
+BatchNumber = 30;
+BatchSize = 1000;
+for k = 1:BatchNumber
+    tic
+    filename = ['SheetShape#' num2str(fracCon) '_fracCon' num2str(k, '%02d') '.mat'];
+    fracCon_generator(fracLoc, fracCon, minSize, BatchSize, savePath, filename);
+    toc
+end
 
-
-function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath)
+function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename)
 
 % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
 minSize(3) = - minSize(3);
@@ -80,7 +85,7 @@ for i = 1:count
     coe{i,1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
 
-save([savePath 'SheetShape#' num2str(fracCon) '_fracCon.mat'], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
+save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
 % --plot test--
 % 
