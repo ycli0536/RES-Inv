@@ -20,31 +20,41 @@ gConfig = getConfig.get_config(config_file='config.ini')
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
 generator = data_preprocessing()
-if gConfig['input_format'] == '2d':
-    train_data, train_target = generator.read_data_2d(
-                               dataPath=gConfig['datapath'],
-                               labelPath=gConfig['labelpath'],
-                               labelFile=gConfig['label_name'],
-                               num_images=gConfig['num_images'],
-                               im_dim=gConfig['im_dim'],
-                               num_channels=gConfig['num_channels']
-                               )
-    print('train_data shape: ', train_data.shape)
-    print('train_target shape: ', train_target.shape)
-    input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
-elif gConfig['input_format'] == '1d':
-    train_data, train_target = generator.read_data_1d(
-                               dataPath=gConfig['datapath'],
-                               data_file=gConfig['1d_file_name'],
-                               labelPath=gConfig['labelpath'],
-                               labelFile=gConfig['label_name']
-                               )
-    train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], 1))
-    print('train_data shape: ', train_data.shape)
-    print('train_target shape: ', train_target.shape)
-    input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
-else:
-    print('--- Wrong input format! ---')
+
+
+def read_data(data_format, label_format):
+
+    if data_format == '2d':
+        train_data = generator.inputData_2d(dataPath=gConfig['datapath'],
+                                            num_images=gConfig['num_images'],
+                                            im_dim=gConfig['im_dim'],
+                                            num_channels=gConfig['num_channels']
+                                            )
+    elif data_format == '1d':
+        train_data = generator.inputData_1d(dataPath=gConfig['datapath'],
+                                            data_file=gConfig['1d_file_name']
+                                            )
+    else:
+        print('--- Wrong input format! ---')
+
+    if label_format == '1d':
+        train_target = generator.label_1d(labelPath=gConfig['labelpath'],
+                                          labelFile=gConfig['label_name']
+                                          )
+    elif label_format == '2d':
+        train_target = generator.label_2d(labelPath=gConfig['labelpath'],
+                                          labelFile=gConfig['label_name']
+                                          )
+    else:
+        print('--- Wrong label format! ---')
+    return train_data, train_target
+
+
+train_data, train_target = read_data(data_format=gConfig['input_format'],
+                                     label_format=gConfig['label_format'])
+print('train_data shape: ', train_data.shape)
+print('train_target shape: ', train_target.shape)
+input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
 
 
 def save_trainingData_np(save_path, train_data, vail_data):
