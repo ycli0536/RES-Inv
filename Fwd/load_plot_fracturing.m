@@ -23,8 +23,10 @@ for i = 1:length(dataGrouplist)
 end
 
 reso = 20;
-% figure; histogram(log10(abs(data)))
-% cutoff = [1e-7 1e-2];
+fig = figure; histogram(log10(abs(data)))
+set(fig, 'Visible', 'off')
+saveas(fig, [savePath, 'histogram_data_total', num2str(size(data, 1)), '.png'])
+cutoff = [1e-7 1e-2];
 loopplot_raw_imagexyc(plotPath, data, cutoff, fracCons, labels)
 
 function loopplot_raw_imagexyc(plotPath, data, cutoff, fracCons, labels)
