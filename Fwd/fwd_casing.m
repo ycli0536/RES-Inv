@@ -7,7 +7,7 @@ PATH = config_parser(Config_file, 'PATH');
 savePath = PATH.savePath_HPC;
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 
-[nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E, MaxCount] = setup(Config_file, 1);
+[nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, E, MaxCount] = setup(Config_file, 1, 'casing');
 % for parfor
 dataLoc_x = dataLoc.X(:);
 dataLoc_y = dataLoc.Y(:);
@@ -45,7 +45,7 @@ end
 
 
 function [Ex, Ey] = E_field(Config_file, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)
-    [~, ~, ~, edgeCon, faceCon, cellCon, ~, ~, ~, E, ~] = setup(Config_file, count);
+    [~, ~, ~, edgeCon, faceCon, cellCon, ~, ~, ~, E, ~] = setup(Config_file, count, 'casing');
     
     % (3) total conductance
     ce = Edge2Edge * edgeCon; % on edges

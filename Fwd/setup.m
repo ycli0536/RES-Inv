@@ -1,4 +1,5 @@
-function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize, source, dataLoc, E, MaxCount] = setup(Config_file, count)
+function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize, source, dataLoc, E, MaxCount] = ...
+            setup(Config_file, count, blk_type)
 
 RectMeshModelsDesign = config_parser(Config_file, 'RectMeshModelsDesign');
 ABMN = config_parser(Config_file, 'ABMNsettings');
@@ -16,8 +17,15 @@ blkLoc_added = blk_info{count, 1}(:, 1:6);
 blkCon_added = blk_info{count, 1}(:, 7);
 MaxCount = length(blk_info);
 
-blkLoc = [earthLoc; blkLoc_added];
-blkCon = [earthCon; blkCon_added];
+if strcmpi(blk_type, 'fracturing')
+    casingLoc = RectMeshModelsDesign.casingLoc;
+    casingCon = RectMeshModelsDesign.casingCon;
+    blkLoc = [earthLoc; casingLoc; blkLoc_added];
+    blkCon = [earthCon; casingCon; blkCon_added];
+elseif strcmpi(blk_type, 'casing')
+    blkLoc = [earthLoc; blkLoc_added];
+    blkCon = [earthCon; blkCon_added];
+end
 
 coreVolume = Mesh.coreVolume;
 minSize = Mesh.minSize;
