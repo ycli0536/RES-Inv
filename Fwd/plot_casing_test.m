@@ -3,8 +3,11 @@ clear
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
 dataPath = PATH.dataPath_PC;
+
+% differential E-field data plot between two time with and without fracturing
 diff_data_plotPath = [dataPath '/diff_data_plot/'];
 if exist(diff_data_plotPath, 'dir') == 0;     mkdir(diff_data_plotPath);     end
+% E-field data at one single time with fracturing
 data_plotPath = [dataPath '/data_plot/'];
 if exist(data_plotPath, 'dir') == 0;     mkdir(data_plotPath);     end
 

@@ -3,9 +3,9 @@ clear
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
 
-dataPath = PATH.dataPath_PC;
-savePath = PATH.targetPath_PC;
-if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+dataPath = PATH.dataPath_PC; % E-field data path
+plotPath = PATH.targetPath_PC; % plot path
+if exist(plotPath, 'dir') == 0;     mkdir(plotPath);     end
 
 dataGrouplist = dir([dataPath 'Casing' '*.mat']);
 data = [];
@@ -19,7 +19,7 @@ cutoff = [1e-11 1e-2];
 % figure; histogram(log10(abs(data)))
 % loopplot_raw_imagexyc(savePath, data, cutoff)
 % loopplot_profile(savePath, data, cutoff)
-data_profile = data1D(savePath, data, 26, log10(cutoff));
+data_profile = data1D(plotPath, data, 26, log10(cutoff));
 for i = 1:40
     plot(data_profile(i,:))
     grid on
