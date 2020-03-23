@@ -9,13 +9,25 @@ minSize = Mesh.minSize;
 
 fracLoc = [300 300 -200 200 -1700 -2100];
 fracCon = 250;
-BatchNumber = 30;
-BatchSize = 1000;
-for k = 1:BatchNumber
+data_saving_mode = 'marge';
+
+if strcmpi(data_saving_mode, 'marge')
     tic
-    filename = ['SheetShape#' num2str(fracCon) '_fracCon' num2str(k, '%02d') '.mat'];
-    fracCon_generator(fracLoc, fracCon, minSize, BatchSize, savePath, filename);
+    count = 2;
+    filename = ['SheetShape#00' '_fracCon' num2str(fracCon) '.mat'];
+    [directions, ShapeCollect, C, coe] = ...
+        fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename);
     toc
+elseif strcmpi(data_saving_mode, 'multi')
+    BatchNumber = 30;
+    BatchSize = 1000;
+    for k = 1:BatchNumber
+        tic
+        filename = ['SheetShape#' num2str(k, '%02d') '_fracCon' num2str(fracCon) '.mat'];
+        [directions, ShapeCollect, C, coe] = ...
+            fracCon_generator(fracLoc, fracCon, minSize, BatchSize, savePath, filename);
+        toc
+    end
 end
 
 function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename)
@@ -63,7 +75,7 @@ end
 center_dim1 = (fracLoc(index(1,1)) + fracLoc(index(1,2)))/2;
 center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 
-C = cell(length(count),1);
+C = cell(length(count)+1,1);% last for initial E-field data
 coe = cell(length(count),1);
 ShapeCollect = zeros(8, count*2);
 directions = [];
@@ -84,6 +96,8 @@ for i = 1:count
     C{i,1} = [fracturingLoc fracturingCon];
     coe{i,1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
+
+C{count + 1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % one more C data
 
 save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
