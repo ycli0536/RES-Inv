@@ -2,15 +2,15 @@
 %% initial
 % PC terminal
 % switch parpool(32) and parfor
-% savePath_HPC -> savePath_PC
+% savePath_HPC -> savePath_PC (including setup.m)
 % dataPath_HPC -> dataPath_PC
 
 clear
-% parpool(32);
+parpool(32);
 Config_file = 'ModelsDesign_2d.ini';
 PATH = config_parser(Config_file, 'PATH');
-savePath = PATH.savePath_PC;
-dataPath = PATH.dataPath_PC;
+savePath = PATH.savePath_HPC;
+dataPath = PATH.dataPath_HPC;
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
 

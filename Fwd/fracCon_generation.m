@@ -1,3 +1,6 @@
+% PC terminal
+% savePath_HPC -> savePath_PC
+
 clear
 
 Config_file = 'ModelsDesign_2d.ini';
@@ -14,7 +17,7 @@ data_saving_mode = 'marge';
 if strcmpi(data_saving_mode, 'marge')
     tic
     count = 2;
-    filename = ['SheetShape#00' '_fracCon' num2str(fracCon) '.mat'];
+    filename = PATH.data_file;
     [directions, ShapeCollect, C, coe] = ...
         fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename);
     toc

@@ -1,3 +1,10 @@
+% HPC terminal
+% switch parpool(32) and parfor
+% savePath_PC -> savePath_HPC (including setup.m)
+% dataPath_PC -> dataPath_HPC
+% targetPath_PC -> targetPath_HPC
+% BatchNumber and BatchSize
+
 clear
 
 Config_file = 'ModelsDesign_2d.ini';
@@ -26,7 +33,7 @@ reso = 20;
 fig = figure; histogram(log10(abs(data)))
 set(fig, 'Visible', 'off')
 saveas(fig, [savePath, 'histogram_data_total', num2str(size(data, 1)), '.png'])
-cutoff = [1e-7 1e-2];
+cutoff = [1e-11 1e-5];
 
 BatchNumber = 2;
 BatchSize = 100;
