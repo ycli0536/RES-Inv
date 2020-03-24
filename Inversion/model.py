@@ -326,11 +326,11 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
 
 
 def fcn(input_shape, input_format, label_format):
-    if input_format == '1d' & label_format == '1d':
+    if (input_format == '1d') & (label_format == '1d'):
         model = fcn_1d_1d(input_shape=input_shape)
-    elif input_format == '2d' & label_format == '1d':
+    elif (input_format == '2d') & (label_format == '1d'):
         model = fcn_2d_1d(input_shape=input_shape)
-    elif input_format == '2d' & label_format == '2d':
+    elif (input_format == '2d') & (label_format == '2d'):
         model = fcn_2d_2d(input_shape=input_shape)
 
     return model
