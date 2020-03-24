@@ -33,7 +33,7 @@ reso = 20;
 fig = figure; histogram(log10(abs(data)))
 set(fig, 'Visible', 'off')
 saveas(fig, [savePath, 'histogram_data_total', num2str(size(data, 1)), '.png'])
-cutoff = [1e-11 1e-5];
+cutoff = [10^(-11) 10^(-5.5)];
 
 BatchNumber = 2;
 BatchSize = 100;
