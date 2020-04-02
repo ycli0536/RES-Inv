@@ -173,7 +173,9 @@ def train():
     # move best model to target folder
     filelist = os.listdir(models_dir)
     filelist.sort()
-    movefile(filelist[-1], models_dir, info_path)  # must suit %04d
+    print('save best %d models' % gConfig['top_models_count'])
+    for filename in filelist[-1 * gConfig['top_models_count']:]:
+        movefile(filename, models_dir, info_path)  # must suit %04d
     shutil.rmtree(models_dir)
 
     # save history information
@@ -186,11 +188,11 @@ def train():
     parser = configparser.ConfigParser()
     parser.read('config.ini')
     parser.set('strings', 'predictionPath', info_path)
-    parser.set('strings', 'model_name', filelist[-1])
+    parser.set('strings', 'last_model_name', filelist[-1])
     parser.set('strings', 'mode', 'predict')
     parser.write(open('config.ini', 'w'))
     shutil.copyfile('config.ini', os.path.join(info_path, 'config.ini'))
-    print('model_name created in config file')
+    print('last_model_name created in config file')
     print('corresponding config information saved at %s' % (os.path.join(info_path, 'config.ini')))
 
     # save data in npy format
