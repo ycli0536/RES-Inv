@@ -3,7 +3,7 @@ import numpy as np
 from model import fcnModel
 
 from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
 
 from data_generation import data_preprocessing
 import getConfig
@@ -147,7 +147,11 @@ def train():
                                    patience=5,
                                    min_lr=0.5e-6)
 
-    callbacks = [checkpoint, lr_reducer, lr_scheduler]
+    earlystopping = EarlyStopping(monitor=monitor,
+                                  patience=100,
+                                  mode='auto')
+
+    callbacks = [checkpoint, lr_reducer, lr_scheduler, earlystopping]
 
     start_time = time.time()
     history = model.fit(X_train, y_train,
