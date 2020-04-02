@@ -356,14 +356,14 @@ class fcnModel(object):
                             input_format=input_format,
                             label_format=label_format)
 
-        if gConfig['loss_function'] == 'rmse':
-            fcn_model.compile(optimizer=Adam(lr=0.001),
+        if gConfig['metric'] == 'rmse':
+            fcn_model.compile(optimizer=Adam(),
                               loss=tf.keras.metrics.mean_squared_error,
-                              metrics=[tf.keras.metrics.RootMeanSquaredError(name=gConfig['loss_function'])])
+                              metrics=[tf.keras.metrics.RootMeanSquaredError(name=gConfig['metric'])])
         else:
             fcn_model.compile(loss=gConfig['loss_function'],
                               optimizer=Adam(lr=0.001),
-                              metrics=[gConfig['loss_function']])
+                              metrics=[gConfig['loss_function'], gConfig['metric']])
         if summary:
             fcn_model.summary()
         return fcn_model
