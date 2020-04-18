@@ -176,72 +176,67 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     return model
 
 
-def fcn_2d_1d(input_shape, num_filters_in=32):
+def fcn_2d_1d(input_shape, num_filters_in=16):
 
-    inputs = Input(input_shape)  # [51 51 3]
+    inputs = Input(input_shape)  # [51 51 2]
 
     conv1 = con_block(inputs, num_filters=num_filters_in)
-    # [51 51 32]
+    # [51 51 16]
     conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
-    # [51 51 32]
-    drop1 = Dropout(rate=dr)(conv1)
-    # [49 49 32]
-    pool1 = MaxPooling2D((2, 2))(drop1)
-    # [24 24 32]
+    # [51 51 16]
+    pool1 = MaxPooling2D((2, 2))(conv1)
+    # [24 24 16]
     num_filters_in *= 2
 
     conv2 = con_block(pool1, num_filters=num_filters_in)
-    # [24 24 64]
+    # [24 24 32]
     conv2 = con_block(conv2, num_filters=num_filters_in)
-    # [24 24 64]
-    drop2 = Dropout(rate=dr)(conv2)
-    # [24 24 64]
-    pool2 = MaxPooling2D((2, 2))(drop2)
-    # [12 12 64]
+    # [24 24 32]
+    pool2 = MaxPooling2D((2, 2))(conv2)
+    # [12 12 32]
     num_filters_in *= 2
 
     conv3 = con_block(pool2, num_filters=num_filters_in)
-    # [12 12 128]
+    # [12 12 64]
     conv3 = con_block(conv3, num_filters=num_filters_in)
-    # [12 12 128]
-    drop3 = Dropout(rate=dr)(conv3)
-    # [12 12 128]
-    pool3 = MaxPooling2D((2, 2))(drop3)
-    # [6 6 128]
+    # [12 12 64]
+    pool3 = MaxPooling2D((2, 2))(conv3)
+    # [6 6 64]
     num_filters_in *= 2
 
     conv4 = con_block(pool3, num_filters=num_filters_in)
-    # [6 6 256]
+    # [6 6 128]
     conv4 = con_block(conv4, num_filters=num_filters_in)
-    # [6 6 256]
-    drop4 = Dropout(rate=dr)(conv4)
-    # [6 6 256]
+    # [6 6 128]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
-    up5 = UpSampling2D(size=(2, 2))(drop4)
-    # [12 12 256]
+    up5 = UpSampling2D(size=(2, 2))(conv4)
+    # [12 12 64]
     merge5 = concatenate([conv3, up5], axis=3)
-    # [12 12 256+128=384]
+    # [12 12 64+64=128]
     conv5 = con_block(merge5, num_filters=num_filters_in)
-    # [12 12 128]
+    # [12 12 64]
     conv5 = con_block(conv5, num_filters=num_filters_in)
-    # [12 12 128]
+    # [12 12 64]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
     up6 = UpSampling2D(size=(2, 2))(conv5)
-    # [24 24 64]
+    # [24 24 32]
     merge6 = concatenate([conv2, up6], axis=3)
-    # [24 24 64+128=192]
+    # [24 24 32+32=64]
     conv6 = con_block(merge6, num_filters=num_filters_in)
     # [24 24 32]
     conv6 = con_block(conv6, num_filters=num_filters_in)
     # [24 24 32]
     conv7 = con_block(conv6, num_filters=1)
 
-    x = Flatten()(conv7)
-    output = Dense(gConfig['target_value_length'], activation='relu')(x)
+    flatten = Flatten()(conv7)
+
+    drop = Dropout(rate=dr)(flatten)
+
+    output = Dense(gConfig['target_value_length'], activation='relu')(drop)
 
     model = Model(inputs=inputs, outputs=output)
 

@@ -46,14 +46,11 @@ class data_preprocessing(object):
                 train_data_mean = np.mean(train_data, axis=0)
                 train_data -= train_data_mean
         if data_form == 'raw':
-            raw_data = loadmat(os.path.join(dataPath, data_file))["data"]
+            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
+            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
             train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
-            for i in range(train_data.shape[0]):
-                train_data[i, :, :, 0] = np.reshape(raw_data[i][:raw_data[1]/2], (im_dim, im_dim))  # Ex
-                train_data[i, :, :, 1] = np.reshape(raw_data[i][raw_data[1]/2:], (im_dim, im_dim))  # Ex
-            train_data = np.log10(train_data)
-        if data_form == 'ang_amp':
-            train_data = loadmat(os.path.join(dataPath, data_file))["ang_amp"]
+            train_data[:, :, :, 0] = amp_data / np.max(amp_data)  # Normalization
+            train_data[:, :, :, 1] = ang_data
 
         return train_data
 
