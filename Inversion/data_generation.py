@@ -15,7 +15,7 @@ class data_preprocessing(object):
 
     def inputData_1d(self, dataPath, data_file):
         train_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
-        feature_range = (0.001, 1)
+        feature_range = (0, 1)
         scaler = MinMaxScaler(feature_range=feature_range)
         train_data = scaler.fit_transform(train_data)
         train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], 1))
@@ -25,31 +25,36 @@ class data_preprocessing(object):
         # load y_train (casingCon_vector)
         # only train_target need log transform (train_data: log10 data)
         train_target = np.load(os.path.join(labelPath, label_file))
-        feature_range = (0.001, 1)
-        scaler = MinMaxScaler(feature_range=feature_range)
-        train_target = scaler.fit_transform(train_target)
 
-        # set useless data after MinMaxScaler as 1.0 (max)
-        index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
-        for id in index:
-            train_target[:, int(id)] = feature_range[1]
         return train_target
 
-    def inputData_2d(self, dataPath, num_images, im_dim, num_channels,
-                     subtract_pixel_mean=True):
+    def inputData_2d(self, dataPath, data_file,
+                     num_samples, im_dim, num_channels,
+                     data_form='image', subtract_pixel_mean=True):
         # load X_train (images)
-        images = np.zeros([num_images, im_dim, im_dim, num_channels])
-        for i, img_name in enumerate(os.listdir(dataPath)):
-            image_path = os.path.join(dataPath, img_name)
-            img = Image.open(image_path)
-            img_data = np.asarray(img, np.uint8)
-            images[i, :, :, :] = img_data
+        if data_form == 'image':
+            images = np.zeros([num_samples, im_dim, im_dim, num_channels])
+            for i, img_name in enumerate(os.listdir(dataPath)):
+                image_path = os.path.join(dataPath, img_name)
+                img = Image.open(image_path)
+                img_data = np.asarray(img, np.uint8)
+                images[i, :, :, :] = img_data
 
-        train_data = images.astype(np.float32) / 255.
-        # If subtract pixel mean is enabled
-        if subtract_pixel_mean:
-            train_data_mean = np.mean(train_data, axis=0)
-            train_data -= train_data_mean
+            train_data = images.astype(np.float32) / 255.
+            # If subtract pixel mean is enabled
+            if subtract_pixel_mean:
+                train_data_mean = np.mean(train_data, axis=0)
+                train_data -= train_data_mean
+        if data_form == 'raw':
+            raw_data = loadmat(os.path.join(dataPath, data_file))["data"]
+            train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
+            for i in range(train_data.shape[0]):
+                train_data[i, :, :, 0] = np.reshape(raw_data[i][:raw_data[1]/2], (im_dim, im_dim))  # Ex
+                train_data[i, :, :, 1] = np.reshape(raw_data[i][raw_data[1]/2:], (im_dim, im_dim))  # Ex
+            train_data = np.log10(train_data)
+        if data_form == 'ang_amp':
+            train_data = loadmat(os.path.join(dataPath, data_file))["ang_amp"]
+
         return train_data
 
     def label_2d(self, labelPath, label_file, num_samples,

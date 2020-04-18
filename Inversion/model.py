@@ -256,11 +256,15 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
     # [50 16]
     conv1 = con_block_1d(conv1, num_filters=num_filters_in, padding='valid')
     # [48 16]
+    conv1 = con_block_1d(conv1, num_filters=num_filters_in)
+    # [48 16]
     pool1 = MaxPooling1D(2)(conv1)
     # [24 16]
     num_filters_in *= 2
 
     conv2 = con_block_1d(pool1, num_filters=num_filters_in)
+    # [24 32]
+    conv2 = con_block_1d(conv2, num_filters=num_filters_in)
     # [24 32]
     conv2 = con_block_1d(conv2, num_filters=num_filters_in)
     # [24 32]
@@ -272,11 +276,15 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
     # [12 64]
     conv3 = con_block_1d(conv3, num_filters=num_filters_in)
     # [12 64]
+    conv3 = con_block_1d(conv3, num_filters=num_filters_in)
+    # [12 64]
     pool3 = MaxPooling1D(2)(conv3)
     # [6 64]
     num_filters_in *= 2
 
     conv4 = con_block_1d(pool3, num_filters=num_filters_in)
+    # [6 128]
+    conv4 = con_block_1d(conv4, num_filters=num_filters_in)
     # [6 128]
     conv4 = con_block_1d(conv4, num_filters=num_filters_in)
     # [6 128]
@@ -291,6 +299,8 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
     # [12 64]
     conv5 = con_block_1d(conv5, num_filters=num_filters_in)
     # [12 64]
+    conv5 = con_block_1d(conv5, num_filters=num_filters_in)
+    # [12 64]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
@@ -302,6 +312,8 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
     # [24 32]
     conv6 = con_block_1d(conv6, num_filters=num_filters_in)
     # [24 32]
+    conv6 = con_block_1d(conv6, num_filters=num_filters_in)
+    # [24 32]
     num_filters_in /= 2
     num_filters_in = int(num_filters_in)
 
@@ -310,6 +322,8 @@ def fcn_1d_1d(input_shape, num_filters_in=16):
     merge7 = concatenate([conv1, up7], axis=2)
     # [48 16+16=32]
     conv7 = con_block_1d(merge7, num_filters=num_filters_in)
+    # [48 16]
+    conv7 = con_block_1d(conv7, num_filters=num_filters_in)
     # [48 16]
     conv7 = con_block_1d(conv7, num_filters=num_filters_in)
     # [48 16]
@@ -356,14 +370,11 @@ class fcnModel(object):
                             input_format=input_format,
                             label_format=label_format)
 
-        if gConfig['metric'] == 'rmse':
+        if gConfig['metric_added'] == 'rmse':
             fcn_model.compile(optimizer=Adam(),
-                              loss=tf.keras.metrics.mean_squared_error,
-                              metrics=[tf.keras.metrics.RootMeanSquaredError(name=gConfig['metric'])])
-        else:
-            fcn_model.compile(loss=gConfig['loss_function'],
-                              optimizer=Adam(lr=0.001),
-                              metrics=[gConfig['loss_function'], gConfig['metric']])
+                              loss=gConfig['loss_function'],
+                              metrics=[tf.keras.metrics.RootMeanSquaredError(name=gConfig['metric_added'])])
+
         if summary:
             fcn_model.summary()
         return fcn_model

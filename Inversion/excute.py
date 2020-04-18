@@ -3,7 +3,7 @@ import numpy as np
 from model import fcnModel
 
 from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
 
 from data_generation import data_preprocessing
 import getConfig
@@ -14,9 +14,10 @@ import shutil
 import json
 
 # tf.debugging.set_log_device_placement(True)
+config_file = 'config.ini'
 
 gConfig = {}
-gConfig = getConfig.get_config(config_file='config.ini')
+gConfig = getConfig.get_config(config_file=config_file)
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
 generator = data_preprocessing()
@@ -26,7 +27,8 @@ def read_data(data_format, label_format):
 
     if data_format == '2d':
         train_data = generator.inputData_2d(dataPath=gConfig['datapath'],
-                                            num_images=gConfig['num_images'],
+                                            data_file=gConfig['data_file_name'],
+                                            num_samples=gConfig['num_samples'],
                                             im_dim=gConfig['im_dim'],
                                             num_channels=gConfig['num_channels']
                                             )
@@ -147,11 +149,11 @@ def train():
                                    patience=5,
                                    min_lr=0.5e-6)
 
-    earlystopping = EarlyStopping(monitor=monitor,
-                                  patience=100,
-                                  mode='auto')
+    # earlystopping = EarlyStopping(monitor=monitor,
+    #                               patience=100,
+    #                               mode='auto')
 
-    callbacks = [checkpoint, lr_reducer, lr_scheduler, earlystopping]
+    callbacks = [checkpoint, lr_reducer, lr_scheduler]
 
     start_time = time.time()
     history = model.fit(X_train, y_train,
@@ -190,14 +192,14 @@ def train():
 
     # save ini in model folder
     parser = configparser.ConfigParser()
-    parser.read('config.ini')
+    parser.read(config_file)
     parser.set('strings', 'predictionPath', info_path)
-    parser.set('strings', 'last_model_name', filelist[-1])
+    parser.set('strings', 'model_name', filelist[-1])
     parser.set('strings', 'mode', 'predict')
-    parser.write(open('config.ini', 'w'))
-    shutil.copyfile('config.ini', os.path.join(info_path, 'config.ini'))
-    print('last_model_name created in config file')
-    print('corresponding config information saved at %s' % (os.path.join(info_path, 'config.ini')))
+    parser.write(open(config_file, 'w'))
+    shutil.copyfile(config_file, os.path.join(info_path, config_file))
+    print('model_name created in config file')
+    print('corresponding config information saved at %s' % (os.path.join(info_path, config_file)))
 
     # save data in npy format
     np.save(os.path.join(info_path, 'X_test'), X_test)
@@ -219,6 +221,10 @@ def predict(test_data, model_path, model_name):
 
     for id, lf in enumerate(model.metrics_names):
         print('Best test (' + lf + '): ', scores[id])
+    parser = configparser.ConfigParser()
+    parser.read(config_file)
+    parser.set('strings', 'mode', 'train')
+    parser.write(open(config_file, 'w'))
 
 
 if __name__ == '__main__':
