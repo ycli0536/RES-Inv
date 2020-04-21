@@ -9,10 +9,11 @@ from tensorflow.keras.models import Model
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
+from excute import config_file
 
 # initializing a dic containing configure parameters
 gConfig = {}
-gConfig = getConfig.get_config(config_file='config.ini')
+gConfig = getConfig.get_config(config_file=config_file)
 dr = gConfig['dropout_rate']
 leakyReLU_alpha = gConfig['leakyrelu_alpha']
 
@@ -180,10 +181,10 @@ def fcn_2d_1d(input_shape, num_filters_in=16):
 
     inputs = Input(input_shape)  # [51 51 2]
 
-    conv1 = con_block(inputs, num_filters=num_filters_in)
-    # [51 51 16]
+    conv1 = con_block(inputs, num_filters=num_filters_in, kernel_size=2, padding='valid')
+    # [50 50 16]
     conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
-    # [51 51 16]
+    # [48 48 16]
     pool1 = MaxPooling2D((2, 2))(conv1)
     # [24 24 16]
     num_filters_in *= 2
@@ -230,11 +231,27 @@ def fcn_2d_1d(input_shape, num_filters_in=16):
     # [24 24 32]
     conv6 = con_block(conv6, num_filters=num_filters_in)
     # [24 24 32]
-    conv7 = con_block(conv6, num_filters=1)
+    num_filters_in /= 2
+    num_filters_in = int(num_filters_in)
 
-    flatten = Flatten()(conv7)
+    up7 = UpSampling2D(size=(2, 2))(conv6)
+    # [48 16]
+    merge7 = concatenate([conv1, up7], axis=3)
+    # [48 16+16=32]
+    conv7 = con_block(merge7, num_filters=num_filters_in)
+    # [48 16]
+    conv7 = con_block(conv7, num_filters=num_filters_in)
+    # [48 16]
 
-    drop = Dropout(rate=dr)(flatten)
+    conv8 = con_block(conv7, num_filters=1)
+
+    flatten = Flatten()(conv8)
+
+    drop1 = Dropout(rate=dr)(flatten)
+
+    dense = Dense(1000, activation='relu')(drop1)
+
+    drop = Dropout(rate=dr)(dense)
 
     output = Dense(gConfig['target_value_length'], activation='relu')(drop)
 

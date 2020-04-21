@@ -7,8 +7,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from scipy.io import loadmat
 
+from excute import config_file
+
 gConfig = {}
-gConfig = getConfig.get_config(config_file='config.ini')
+gConfig = getConfig.get_config(config_file=config_file)
 
 
 class data_preprocessing(object):
@@ -25,15 +27,15 @@ class data_preprocessing(object):
         # load y_train (casingCon_vector)
         # only train_target need log transform (train_data: log10 data)
         train_target = np.load(os.path.join(labelPath, label_file))
-        # train_target = train_target / np.max(train_target)
-        feature_range = (0, 1)
-        scaler = MinMaxScaler(feature_range=feature_range)
-        train_target = scaler.fit_transform(train_target)
+        train_target = train_target / np.max(train_target)
+        # feature_range = (0, 1)
+        # scaler = MinMaxScaler(feature_range=feature_range)
+        # train_target = scaler.fit_transform(train_target)
 
         # set useless data after MinMaxScaler as 1.0 (max)
-        index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
-        for id in index:
-            train_target[:, int(id)] = feature_range[1]
+        # index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
+        # for id in index:
+        #     train_target[:, int(id)] = feature_range[1]
 
         return train_target
 
@@ -91,7 +93,7 @@ class data_preprocessing(object):
         X_train, X_vail, y_train, y_vail = train_test_split(train_data,
                                                             train_target,
                                                             test_size=gConfig['splitsize_train_others'],
-                                                            random_state=gConfig['seed'])
+							    random_state=gConfig['seed'])
         X_vail, X_test, y_vail, y_test = train_test_split(X_vail, y_vail,
                                                           test_size=gConfig['splitsize_vail_test'],
                                                           random_state=gConfig['seed'])
