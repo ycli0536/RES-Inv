@@ -12,9 +12,15 @@ import os
 import time
 import shutil
 import json
+import argparse
 
 # tf.debugging.set_log_device_placement(True)
-config_file = 'config.ini'
+
+parser = argparse.ArgumentParser(description='read config.ini')
+parser.add_argument("filename", help="please input config file")
+args = parser.parse_args()
+
+config_file = args.filename
 
 gConfig = {}
 gConfig = getConfig.get_config(config_file=config_file)
@@ -42,7 +48,7 @@ def read_data(data_format, label_format):
     if label_format == '2d':
         train_target = generator.label_2d(labelPath=gConfig['labelpath'],
                                           label_file=gConfig['label_file_name'],
-                                          num_samples=gConfig['num_images'],
+                                          num_samples=gConfig['num_samples'],
                                           label_dim=gConfig['label_dim'],
                                           num_channels=gConfig['num_label_channels']
                                           )
@@ -92,11 +98,11 @@ def lr_schedule(epoch):
     lr = 1e-3
     if epoch > 800:
         lr *= pow(5e-1, 4)
-    elif epoch > 600:
+    elif epoch > 500:
         lr *= pow(5e-1, 3)
-    elif epoch > 400:
+    elif epoch > 250:
         lr *= pow(5e-1, 2)
-    elif epoch > 200:
+    elif epoch > 100:
         lr *= 5e-1
     return lr
 
@@ -138,10 +144,10 @@ def train():
     checkpoint = ModelCheckpoint(filepath=filepath,
                                  monitor=monitor,
                                  mode='min',
-                                 verbose=1,
+                                 verbose=0,
                                  save_best_only=True)
 
-    lr_scheduler = LearningRateScheduler(lr_schedule, verbose=1)
+    lr_scheduler = LearningRateScheduler(lr_schedule, verbose=0)
 
     lr_reducer = ReduceLROnPlateau(monitor=monitor,
                                    factor=np.sqrt(0.1),
@@ -161,7 +167,8 @@ def train():
                         epochs=gConfig['epochs'],
                         validation_data=(X_vail, y_vail),
                         shuffle=True,
-                        callbacks=callbacks)
+                        callbacks=callbacks,
+                        verbose=0)
     duration = time.time() - start_time
     print('Duration time (s): ', duration)
 
@@ -176,12 +183,20 @@ def train():
     last_model_name = gConfig['model_name_prefix'] + '.%04d.h5' % gConfig['epochs']
     model.save(os.path.join(info_path, last_model_name))
 
+    parser = configparser.ConfigParser()
+    parser.read(config_file)
+
     # move best model to target folder
     filelist = os.listdir(models_dir)
     filelist.sort()
+    model_id_count = 0
     print('save best %d models' % gConfig['top_models_count'])
     for filename in filelist[-1 * gConfig['top_models_count']:]:
         movefile(filename, models_dir, info_path)  # must suit %04d
+        model_id_count += 1
+        parser.set('strings', 'model_id%d' % model_id_count, filename)
+        parser.set('ints', 'model_id_count', str(model_id_count))
+        print(model_id_count)
     shutil.rmtree(models_dir)
 
     # save history information
@@ -191,10 +206,7 @@ def train():
     fileObject.close()
 
     # save ini in model folder
-    parser = configparser.ConfigParser()
-    parser.read(config_file)
     parser.set('strings', 'predictionPath', info_path)
-    parser.set('strings', 'model_name', filelist[-1])
     parser.set('strings', 'mode', 'predict')
     parser.write(open(config_file, 'w'))
     shutil.copyfile(config_file, os.path.join(info_path, config_file))
@@ -208,19 +220,23 @@ def train():
         save_trainingData_np(info_path, (X_train, y_train), (X_vail, y_vail))
 
 
-def predict(test_data, model_path, model_name):
-    targetModel = os.path.join(model_path, model_name)
-    print('target model path is: %s' % (targetModel))
-    model = load_model(targetModel)
-    X_test = test_data[0]
-    y_test = test_data[1]
-    scores = model.evaluate(X_test, y_test, batch_size=gConfig['batch_size'], verbose=1)
+def predict(test_data, model_path, model_count):
 
-    y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
-    np.save(os.path.join(model_path, 'y_pred_' + model_name), y_pred)
+    for i in range(model_count):
+        model_name = gConfig['model_id%d' % (i+1)]
+        targetModel = os.path.join(model_path, model_name)
+        print('target model path is: %s' % (targetModel))
+        model = load_model(targetModel)
+        X_test = test_data[0]
+        y_test = test_data[1]
+        scores = model.evaluate(X_test, y_test, batch_size=gConfig['batch_size'], verbose=1)
 
-    for id, lf in enumerate(model.metrics_names):
-        print('Best test (' + lf + '): ', scores[id])
+        y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
+        np.save(os.path.join(model_path, 'y_pred_' + model_name), y_pred)
+
+        for id, lf in enumerate(model.metrics_names):
+            print('Best test (' + lf + '): ', scores[id])
+
     parser = configparser.ConfigParser()
     parser.read(config_file)
     parser.set('strings', 'mode', 'train')
@@ -237,4 +253,4 @@ if __name__ == '__main__':
 
         predict(test_data=(X_test, y_test),
                 model_path=gConfig['predictionpath'],
-                model_name=gConfig['model_name'])
+                model_count=gConfig['model_id_count'])
