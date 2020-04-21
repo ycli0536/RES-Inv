@@ -25,12 +25,21 @@ class data_preprocessing(object):
         # load y_train (casingCon_vector)
         # only train_target need log transform (train_data: log10 data)
         train_target = np.load(os.path.join(labelPath, label_file))
+        # train_target = train_target / np.max(train_target)
+        feature_range = (0, 1)
+        scaler = MinMaxScaler(feature_range=feature_range)
+        train_target = scaler.fit_transform(train_target)
+
+        # set useless data after MinMaxScaler as 1.0 (max)
+        index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
+        for id in index:
+            train_target[:, int(id)] = feature_range[1]
 
         return train_target
 
     def inputData_2d(self, dataPath, data_file,
                      num_samples, im_dim, num_channels,
-                     data_form='image', subtract_pixel_mean=True):
+                     data_form='raw', subtract_pixel_mean=True):
         # load X_train (images)
         if data_form == 'image':
             images = np.zeros([num_samples, im_dim, im_dim, num_channels])
@@ -49,7 +58,7 @@ class data_preprocessing(object):
             amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
             ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
             train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
-            train_data[:, :, :, 0] = amp_data / np.max(amp_data)  # Normalization
+            train_data[:, :, :, 0] = amp_data
             train_data[:, :, :, 1] = ang_data
 
         return train_data
