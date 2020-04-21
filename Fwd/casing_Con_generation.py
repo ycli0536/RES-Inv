@@ -45,15 +45,15 @@ def target_generator(data, num_segments, Maxdepth, miniSize, log10Flag=False):
         target_data.append(casingCon)
     if log10Flag:
         target_data = np.log10(target_data)
-        filename = 'target_data_log10'
+        filename = 'target_data_log10_%d' % abs(Maxdepth / miniSize)
     else:
-        filename = 'target_data'
+        filename = 'target_data_%d' % abs(Maxdepth / miniSize)
     return target_data, filename
 
 
 def main():
     parser = argparse.ArgumentParser(description='python code plotting casing conductivity profiles for check',
-                                     epilog="Created in 02/15/2020, last updated in 05/03/2020 by Yinchu Li")
+                                     epilog="Created in 02/15/2020, last updated in 21/04/2020 by Yinchu Li")
     parser.add_argument("filename", help="please input data file")
     # 2 ways: 1. with path; 2. without path
     parser.add_argument("-s", "--save", action="store_true",
@@ -77,7 +77,7 @@ def main():
         train_target, filename = target_generator(data=target_data,
                                                   num_segments=num_segments,
                                                   Maxdepth=Maxdepth,
-                                                  miniSize=10,
+                                                  miniSize=25,
                                                   log10Flag=True)
         targetPath = os.path.join(os.path.abspath(args.generationPATH), 'labels')
         print('target path is :', targetPath)
