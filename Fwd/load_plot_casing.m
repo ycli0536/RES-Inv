@@ -4,8 +4,9 @@ Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
 
 dataPath = PATH.dataPath_PC; % E-field data path
-plotPath = PATH.targetPath_PC; % plot path
-if exist(plotPath, 'dir') == 0;     mkdir(plotPath);     end
+savePath = PATH.savePath_PC; % where to save the processed data
+% plotPath = PATH.targetPath_PC; % plot path
+% if exist(plotPath, 'dir') == 0;     mkdir(plotPath);     end
 
 dataGrouplist = dir([dataPath 'Casing' '*.mat']);
 data = [];
@@ -19,12 +20,13 @@ cutoff = [1e-11 1e-2];
 % figure; histogram(log10(abs(data)))
 % loopplot_raw_imagexyc(savePath, data, cutoff)
 % loopplot_profile(savePath, data, cutoff)
-data_profile = data1D(plotPath, data, 26, log10(cutoff));
-for i = 1:40
-    plot(data_profile(i,:))
-    grid on
-    hold on
-end
+% data_profile = data1D(plotPath, data, 26, log10(cutoff));
+% for i = 1:40
+%     plot(data_profile(i,:))
+%     grid on
+%     hold on
+% end
+data2D(savePath, data, log10(cutoff));
 
 function loopplot_raw_imagexyc(plotPath, data, cutoff)
     dataGridX = -500:20:500;
@@ -81,5 +83,31 @@ function figure_Aprofile(plotPath, dataLoc, data, amp, i, k, cutoff)
     ylim(cutoff)
     title(['Amplitude profile (y = 0) - ' num2str(i) '/' num2str(size(data, 1))])
     saveas(fig2, [plotPath '1D_amp' num2str(i) '.png'])
+end
+
+function data2D(savePath, data, cutoff)
+    dataGridX = -500:20:500;
+    dataGridY = -500:20:500;
+    [dataLocX, dataLocY] = meshgrid(dataGridX, dataGridY);
+    
+    dataLoc_x = dataLocX(:);
+    dataLoc_y = dataLocY(:);
+    data_log_amp = zeros(size(data, 1), 51, 51);
+    data_log_ang = zeros(size(data, 1), 51, 51);
+    for i = 1:size(data, 1)
+        Ex = data(i, 1:length(dataLoc_x));
+        Ey = data(i, length(dataLoc_y)+1:end);
+        amp = reshape(sqrt(Ex.^2+Ey.^2),51,51);
+        amp_log = log10(amp);
+        amp_log(amp_log <= cutoff(1)) = cutoff(1);
+        ampmin = min(min(amp_log));
+        ampmax = max(max(amp_log));
+        amp_log = interp1([ampmin ampmax],[0 1],amp_log);
+        ang = atan2(Ex, -Ey) / pi; % range from -1 to 1
+        ang = interp1([-1 1],[0 1],ang);
+        data_log_amp(i, :, :) = amp_log;
+        data_log_ang(i, :, :) = reshape(ang, 51, 51);
+    end
+    save([savePath 'Casing#01_casingCon_layeredBg.mat'], 'data_log_amp', 'data_log_ang');
 end
 
