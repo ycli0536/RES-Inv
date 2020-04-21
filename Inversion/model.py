@@ -1,4 +1,4 @@
-import getConfig
+from getConfig import gConfig
 from tensorflow.keras.layers import Activation, BatchNormalization, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, LeakyReLU
 from tensorflow.keras.layers import Conv1D, MaxPooling1D
@@ -9,11 +9,7 @@ from tensorflow.keras.models import Model
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-from excute import config_file
-
 # initializing a dic containing configure parameters
-gConfig = {}
-gConfig = getConfig.get_config(config_file=config_file)
 dr = gConfig['dropout_rate']
 leakyReLU_alpha = gConfig['leakyrelu_alpha']
 

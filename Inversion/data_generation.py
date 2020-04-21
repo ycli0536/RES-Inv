@@ -1,4 +1,4 @@
-import getConfig
+from getConfig import gConfig
 import os
 import numpy as np
 from PIL import Image
@@ -6,11 +6,6 @@ from matplotlib.path import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from scipy.io import loadmat
-
-from excute import config_file
-
-gConfig = {}
-gConfig = getConfig.get_config(config_file=config_file)
 
 
 class data_preprocessing(object):

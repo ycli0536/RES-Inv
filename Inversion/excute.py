@@ -6,24 +6,14 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
 
 from data_generation import data_preprocessing
-import getConfig
+from getConfig import gConfig, config_file
 import configparser
 import os
 import time
 import shutil
 import json
-import argparse
 
 # tf.debugging.set_log_device_placement(True)
-
-parser = argparse.ArgumentParser(description='read config.ini')
-parser.add_argument("filename", help="please input config file")
-args = parser.parse_args()
-
-config_file = args.filename
-
-gConfig = {}
-gConfig = getConfig.get_config(config_file=config_file)
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
 generator = data_preprocessing()
@@ -244,7 +234,6 @@ def predict(test_data, model_path, model_count):
 
 
 if __name__ == '__main__':
-    gConfig = getConfig.get_config()
     if gConfig['mode'] == 'train':
         train()
     if gConfig['mode'] == 'predict':
