@@ -12,26 +12,13 @@ minSize = Mesh.minSize;
 
 fracLoc = [300 300 -200 200 -1700 -2100];
 fracCon = 250;
-data_saving_mode = 'marge';
 
-if strcmpi(data_saving_mode, 'marge')
-    tic
-    count = 2;
-    filename = PATH.data_file;
-    [directions, ShapeCollect, C, coe] = ...
-        fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename);
-    toc
-elseif strcmpi(data_saving_mode, 'multi')
-    BatchNumber = 30;
-    BatchSize = 1000;
-    for k = 1:BatchNumber
-        tic
-        filename = ['SheetShape#' num2str(k, '%02d') '_fracCon' num2str(fracCon) '.mat'];
-        [directions, ShapeCollect, C, coe] = ...
-            fracCon_generator(fracLoc, fracCon, minSize, BatchSize, savePath, filename);
-        toc
-    end
-end
+tic
+count = 30000;
+filename = PATH.data_file;
+[directions, ShapeCollect, C, coe] = ...
+    fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename);
+toc
 
 function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename)
 
@@ -78,11 +65,12 @@ end
 center_dim1 = (fracLoc(index(1,1)) + fracLoc(index(1,2)))/2;
 center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 
-C = cell(length(count)+1,1);% last for initial E-field data
+C = cell(length(count)+1,1); % one more C data
+C{1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % first for initial E-field data
 coe = cell(length(count),1);
 ShapeCollect = zeros(8, count*2);
 directions = [];
-for i = 1:count
+for i = 2:count + 1
     % randomShape generation
     % pseudo-random 8 control points detemining ploygon's shape
     [direction, SheetShape] = randomShape(r, center_dim1, center_dim2);
@@ -96,11 +84,9 @@ for i = 1:count
         % formula = fracCon(250) * (area/max_area(2500))
         fracturingCon(j) = fracCon * area(polyout) / abs(minSize(index(3,1)) * minSize(index(3,2)));
     end
-    C{i,1} = [fracturingLoc fracturingCon];
-    coe{i,1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
+    C{i, 1} = [fracturingLoc fracturingCon];
+    coe{i - 1, 1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
-
-C{count + 1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % one more C data
 
 save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
