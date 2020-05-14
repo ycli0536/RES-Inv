@@ -3,12 +3,15 @@ clear
 Config_file = 'ModelsDesign.ini';
 PATH = config_parser(Config_file, 'PATH');
 
-dataPath = PATH.dataPath_PC; % E-field data path
+dataPath = PATH.homePath_PC; % E-field data path
 savePath = PATH.savePath_PC; % where to save the processed data
 % plotPath = PATH.targetPath_PC; % plot path
 % if exist(plotPath, 'dir') == 0;     mkdir(plotPath);     end
+dataname = PATH.data_file;
+filename = PATH.saved_file;
 
-dataGrouplist = dir([dataPath 'Casing' '*.mat']);
+% dataGrouplist = dir([dataPath 'Casing#01_' '*.mat']);
+dataGrouplist = dir([dataPath dataname]);
 data = [];
 for i = 1:length(dataGrouplist)
     temp = load([dataPath dataGrouplist(i).name]);
@@ -16,7 +19,7 @@ for i = 1:length(dataGrouplist)
 end
 
 reso = 20;
-cutoff = [1e-11 1e-2];
+cutoff = [1e-10 1e-2];
 % figure; histogram(log10(abs(data)))
 % loopplot_raw_imagexyc(savePath, data, cutoff)
 % loopplot_profile(savePath, data, cutoff)
@@ -26,7 +29,8 @@ cutoff = [1e-11 1e-2];
 %     grid on
 %     hold on
 % end
-data2D(savePath, data, log10(cutoff));
+data2D(savePath, filename, data, log10(cutoff));
+data2D_orig(savePath, filename, data);
 
 function loopplot_raw_imagexyc(plotPath, data, cutoff)
     dataGridX = -500:20:500;
@@ -85,7 +89,28 @@ function figure_Aprofile(plotPath, dataLoc, data, amp, i, k, cutoff)
     saveas(fig2, [plotPath '1D_amp' num2str(i) '.png'])
 end
 
-function data2D(savePath, data, cutoff)
+function data2D_orig(savePath, filename, data)
+    dataGridX = -500:20:500;
+    dataGridY = -500:20:500;
+    [dataLocX, dataLocY] = meshgrid(dataGridX, dataGridY);
+    
+    dataLoc_x = dataLocX(:);
+    dataLoc_y = dataLocY(:);
+    data_log_amp_orig = zeros(size(data, 1), 51, 51);
+    data_log_ang_orig = zeros(size(data, 1), 51, 51);
+    for i = 1:size(data, 1)
+        Ex = data(i, 1:length(dataLoc_x));
+        Ey = data(i, length(dataLoc_y)+1:end);
+        amp = reshape(sqrt(Ex.^2+Ey.^2),51,51);
+        amp_log = log10(amp);
+        ang = atan2(Ex, -Ey) / pi; % range from -1 to 1
+        data_log_amp_orig(i, :, :) = amp_log;
+        data_log_ang_orig(i, :, :) = reshape(ang, 51, 51);
+    end
+    save([savePath 'orig_' filename], 'data_log_amp_orig', 'data_log_ang_orig');
+end
+
+function data2D(savePath, filename, data, cutoff)
     dataGridX = -500:20:500;
     dataGridY = -500:20:500;
     [dataLocX, dataLocY] = meshgrid(dataGridX, dataGridY);
@@ -108,6 +133,6 @@ function data2D(savePath, data, cutoff)
         data_log_amp(i, :, :) = amp_log;
         data_log_ang(i, :, :) = reshape(ang, 51, 51);
     end
-    save([savePath 'Casing#01_casingCon_layeredBg.mat'], 'data_log_amp', 'data_log_ang');
+    save([savePath filename], 'data_log_amp', 'data_log_ang');
 end
 
