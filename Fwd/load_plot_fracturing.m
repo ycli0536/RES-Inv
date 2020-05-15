@@ -93,7 +93,7 @@ function data2D_orig(savePath, filename, data)
         data_log_amp_orig(i, :, :) = amp_log;
         data_log_ang_orig(i, :, :) = reshape(ang, 51, 51);
     end
-    save([savePath 'orig_' filename], 'data_log_amp_orig', 'data_log_ang_orig');
+    save([savePath filename], 'data_log_amp_orig', 'data_log_ang_orig');
 end
 
 function data2D(savePath, filename, data, cutoff)
