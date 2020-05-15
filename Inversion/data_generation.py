@@ -51,12 +51,30 @@ class data_preprocessing(object):
             if subtract_pixel_mean:
                 train_data_mean = np.mean(train_data, axis=0)
                 train_data -= train_data_mean
+
         if data_form == 'raw':
-            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
-            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
+            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp_orig"]
+            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang_orig"]
             train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
             train_data[:, :, :, 0] = amp_data
             train_data[:, :, :, 1] = ang_data
+
+        if data_form == 'HSV+amp':
+            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
+            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
+            train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
+            images = np.zeros([num_samples, im_dim, im_dim, 3])
+            for i, img_name in enumerate(os.listdir(imagePath)):
+                image_path = os.path.join(imagePath, img_name)
+                img = Image.open(image_path)
+                img_data = np.asarray(img, np.uint8)
+                images[i, :, :, :] = img_data
+            train_data[:, :, :, :3] = images.astype(np.float32) / 255.
+            # If subtract pixel mean is enabled
+            if subtract_pixel_mean:
+                train_data_mean = np.mean(train_data, axis=0)
+                train_data -= train_data_mean
+            train_data[:, :, :, 4] = amp_data
 
         return train_data
 

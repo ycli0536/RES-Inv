@@ -26,7 +26,8 @@ def read_data(data_format, label_format):
                                             data_file=gConfig['data_file_name'],
                                             num_samples=gConfig['num_samples'],
                                             im_dim=gConfig['im_dim'],
-                                            num_channels=gConfig['num_channels']
+                                            num_channels=gConfig['num_channels'],
+                                            data_form='raw'
                                             )
     elif data_format == '1d':
         train_data = generator.inputData_1d(dataPath=gConfig['datapath'],
