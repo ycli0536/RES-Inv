@@ -81,8 +81,8 @@ def con_block_1d(inputs,
 def fcn_2d_2d(input_shape, num_filters_in=32):
     """ Fully Convolutional Network
 
-     The network consists of 5 levels
-     (2 max pooling and 3 upscaling)
+     The network consists of 7 levels
+     (3 max pooling and 4 upscaling)
      each having three convolutional
       blocks (convolution + batch normalization + ReLU).
     """
@@ -121,9 +121,10 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     num_filters_in = int(num_filters_in)
 
     up5 = UpSampling2D(size=(2, 2))(conv4)
-    # [12 12 256]
+    up5 = con_block(up5, num_filters=num_filters_in)
+    # [12 12 128]
     merge5 = concatenate([conv3, up5], axis=3)
-    # [12 12 128+256=384]
+    # [12 12 128+128=256]
     conv5 = con_block(merge5, num_filters=num_filters_in)
     # [12 12 128]
     conv5 = con_block(conv5, num_filters=num_filters_in)
@@ -132,9 +133,10 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     num_filters_in = int(num_filters_in)
 
     up6 = UpSampling2D(size=(2, 2))(conv5)
-    # [24 24 128]
+    up6 = con_block(up6, num_filters=num_filters_in)
+    # [24 24 64]
     merge6 = concatenate([conv2, up6], axis=3)
-    # [24 24 64+128=192]
+    # [24 24 64+64=128]
     conv6 = con_block(merge6, num_filters=num_filters_in)
     # [24 24 64]
     conv6 = con_block(conv6, num_filters=num_filters_in)
@@ -143,9 +145,10 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     num_filters_in = int(num_filters_in)
 
     up7 = UpSampling2D(size=(2, 2))(conv6)
-    # [48 48 64]
+    up7 = con_block(up7, num_filters=num_filters_in)
+    # [48 48 32]
     merge7 = concatenate([conv1, up7], axis=3)
-    # [48 48 32+64=96]
+    # [48 48 32+32=64]
     conv7 = con_block(merge7, num_filters=num_filters_in)
     # [48 48 32]
     conv7 = con_block(conv7, num_filters=num_filters_in)
@@ -154,7 +157,8 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     num_filters_in = int(num_filters_in)
 
     up8 = UpSampling2D(size=(2, 2))(conv7)
-    # [96 96 32]
+    up8 = con_block(up8, num_filters=num_filters_in)
+    # [96 96 16]
     conv8 = con_block(up8, num_filters=num_filters_in)
     # [96 96 16]
     drop8 = Dropout(rate=dr)(conv8)
@@ -165,6 +169,93 @@ def fcn_2d_2d(input_shape, num_filters_in=32):
     model = Model(inputs=inputs, outputs=conv8)
 
     return model
+
+# def fcn_2d_2d(input_shape, num_filters_in=16):
+#     """ Fully Convolutional Network
+
+#      The network consists of 6 levels
+#      (3 max-pooling and 3 upscaling)
+#      each having three convolutional
+#       blocks (convolution + batch normalization + ReLU).
+#     """
+
+#     inputs = Input(input_shape)  # [51 51 3]
+
+#     conv1 = con_block(inputs, num_filters=num_filters_in, kernel_size=2, padding='valid')
+#     # [50 50 16]
+#     conv1 = con_block(conv1, num_filters=num_filters_in, padding='valid')
+#     # [48 48 16]
+#     pool1 = MaxPooling2D((2, 2))(conv1)
+#     # [24 24 16]
+#     num_filters_in *= 2
+
+#     conv2 = con_block(pool1, num_filters=num_filters_in)
+#     # [24 24 32]
+#     conv2 = con_block(conv2, num_filters=num_filters_in)
+#     # [24 24 32]
+#     pool2 = MaxPooling2D((2, 2))(conv2)
+#     # [12 12 32]
+#     num_filters_in *= 2
+
+#     conv3 = con_block(pool2, num_filters=num_filters_in)
+#     # [12 12 64]
+#     conv3 = con_block(conv3, num_filters=num_filters_in)
+#     # [12 12 64]
+#     pool3 = MaxPooling2D((2, 2))(conv3)
+#     # [6 6 64]
+#     num_filters_in *= 2
+
+#     conv4 = con_block(pool3, num_filters=num_filters_in)
+#     # [6 6 128]
+#     conv4 = con_block(conv4, num_filters=num_filters_in)
+#     # [6 6 128]
+#     num_filters_in /= 2
+#     num_filters_in = int(num_filters_in)
+
+#     up5 = UpSampling2D(size=(2, 2))(conv4)
+#     up5 = con_block(up5, num_filters=num_filters_in)
+#     # [12 12 64]
+#     merge5 = concatenate([conv3, up5], axis=3)
+#     # [12 12 64+64=128]
+#     conv5 = con_block(merge5, num_filters=num_filters_in)
+#     # [12 12 64]
+#     conv5 = con_block(conv5, num_filters=num_filters_in)
+#     # [12 12 64]
+#     num_filters_in /= 2
+#     num_filters_in = int(num_filters_in)
+
+#     up6 = UpSampling2D(size=(2, 2))(conv5)
+#     up6 = con_block(up6, num_filters=num_filters_in)
+#     # [24 24 32]
+#     merge6 = concatenate([conv2, up6], axis=3)
+#     # [24 24 32+32=64]
+#     conv6 = con_block(merge6, num_filters=num_filters_in)
+#     # [24 24 32]
+#     conv6 = con_block(conv6, num_filters=num_filters_in)
+#     # [24 24 32]
+#     num_filters_in /= 2
+#     num_filters_in = int(num_filters_in)
+
+#     up7 = UpSampling2D(size=(2, 2))(conv6)
+#     up7 = con_block(up7, num_filters=num_filters_in)
+#     # [48 48 16]
+#     merge7 = concatenate([conv1, up7], axis=3)
+#     # [48 48 16+16=32]
+#     conv7 = con_block(merge7, num_filters=num_filters_in)
+#     # [48 48 16]
+#     conv7 = con_block(conv7, num_filters=num_filters_in)
+#     # [48 48 16]
+#     num_filters_in /= 2
+#     num_filters_in = int(num_filters_in)
+
+#     drop8 = Dropout(rate=dr)(conv7)
+
+#     conv8 = con_block(drop8, num_filters=1)
+#     # [48 48 1]
+
+#     model = Model(inputs=inputs, outputs=conv8)
+
+#     return model
 
 
 def fcn_2d_1d(input_shape, num_filters_in=16):
