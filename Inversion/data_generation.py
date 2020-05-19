@@ -53,8 +53,8 @@ class data_preprocessing(object):
                 train_data -= train_data_mean
 
         if data_form == 'raw':
-            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp_orig"]
-            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang_orig"]
+            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
+            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
             train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
             train_data[:, :, :, 0] = amp_data
             train_data[:, :, :, 1] = ang_data
@@ -94,7 +94,7 @@ class data_preprocessing(object):
         points = np.vstack((x, y)).T
 
         for i in range(num_samples):
-            poly_verts = verts[:, 2 * i:2 * (i + 1)]
+            poly_verts = verts[:, 2 * (i + 1):2 * ((i + 1) + 1)] # +1 to skip first Shape data (none)
             path = Path(poly_verts)
             grid = path.contains_points(points)
             grid = grid.reshape((dim2, dim1))
@@ -106,7 +106,7 @@ class data_preprocessing(object):
         X_train, X_vail, y_train, y_vail = train_test_split(train_data,
                                                             train_target,
                                                             test_size=gConfig['splitsize_train_others'],
-							    random_state=gConfig['seed'])
+                                                            random_state=gConfig['seed'])
         X_vail, X_test, y_vail, y_test = train_test_split(X_vail, y_vail,
                                                           test_size=gConfig['splitsize_vail_test'],
                                                           random_state=gConfig['seed'])
