@@ -53,7 +53,7 @@ def target_generator(data, num_segments, Maxdepth, miniSize, log10Flag=False):
 
 def main():
     parser = argparse.ArgumentParser(description='python code plotting casing conductivity profiles for check',
-                                     epilog="Created in 02/15/2020, last updated in 21/04/2020 by Yinchu Li")
+                                     epilog="Created in 02/15/2020, last updated in 04/21/2020 by Yinchu Li")
     parser.add_argument("filename", help="please input data file")
     # 2 ways: 1. with path; 2. without path
     parser.add_argument("-s", "--save", action="store_true",
