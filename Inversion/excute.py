@@ -13,6 +13,8 @@ import time
 import shutil
 import json
 
+os.environ['CUDA_VISIBLE_DEVICES']='0'
+
 # tf.debugging.set_log_device_placement(True)
 print('dataPath is :', gConfig['datapath'])
 print('labelPath is: ', gConfig['labelpath'])
