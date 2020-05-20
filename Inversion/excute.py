@@ -89,13 +89,13 @@ class MyEncoder(json.JSONEncoder):
 
 def lr_schedule(epoch):
     lr = 1e-3
-    if epoch > 800:
+    if epoch > 160:
         lr *= pow(5e-1, 4)
-    elif epoch > 500:
+    elif epoch > 120:
         lr *= pow(5e-1, 3)
-    elif epoch > 250:
+    elif epoch > 80:
         lr *= pow(5e-1, 2)
-    elif epoch > 100:
+    elif epoch > 40:
         lr *= 5e-1
     return lr
 
@@ -123,7 +123,7 @@ def movefile(file, src_path, dst_path):
 
 def train():
     model = creat_model()
-    models_dir = os.path.join(gConfig['infopath'], 'saved_models')
+    models_dir = os.path.join(gConfig['infopath'], gConfig['temp_models'])
     model_name = gConfig['model_name_prefix'] + '.{epoch:04d}.h5'
     if not os.path.isdir(models_dir):
         os.makedirs(models_dir)
