@@ -34,7 +34,7 @@ reso = 20;
 fig = figure; histogram(log10(abs(data)))
 set(fig, 'Visible', 'off')
 saveas(fig, [targetPath, 'histogram_data_total', num2str(size(data, 1)), '.png'])
-cutoff = [1e-13 10^(-5.5)];
+cutoff = [1e-12 1e-5];
 
 % log amp and [-1, 1] ang
 filename_orig = 'orig_fracCon_logAmp_Ang.mat';

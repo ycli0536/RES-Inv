@@ -94,7 +94,7 @@ class data_preprocessing(object):
         points = np.vstack((x, y)).T
 
         for i in range(num_samples):
-            poly_verts = verts[:, 2 * (i + 1):2 * ((i + 1) + 1)] # +1 to skip first Shape data (none)
+            poly_verts = verts[:, 2 * (i + 1): 2 * ((i + 1) + 1)] # + 1 to skip first Shape data (none)
             path = Path(poly_verts)
             grid = path.contains_points(points)
             grid = grid.reshape((dim2, dim1))
