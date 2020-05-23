@@ -4,15 +4,19 @@
 % switch parpool(32) and parfor
 % savePath_HPC -> savePath_PC (including setup.m)
 % dataPath_HPC -> dataPath_PC
+% pre-setting values in this code: Config_file; BatchNumber; BatchSize; 
 
 clear
-parpool(32);
-Config_file = 'ModelsDesign_2d.ini';
+parpool(40);
+Config_file = 'ModelsDesign_2d_noise0.1.ini';
 PATH = config_parser(Config_file, 'PATH');
 savePath = PATH.savePath_HPC;
 dataPath = PATH.dataPath_HPC;
 if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
 if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
+
+other = config_parser(Config_file, 'data_processing');
+Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
 
 [nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, ~, MaxCount] = setup(Config_file, 1, 'fracturing');
 % for parfor
@@ -30,25 +34,31 @@ Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
 G = formPotentialDifferenceMatrix(edges);
 s = formSourceNearestNodes(nodes,source);
 %% Import E_initial
-[Ex1, Ey1] = E_field(Config_file, MaxCount, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
-E_obs1 = [Ex1; Ey1];
+[Ex1, Ey1] = E_field(Config_file, 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
 
 %% Differential E-field calculation and saving
-BatchNumber = 30;
-BatchSize = 1000;
+BatchNumber = 3;
+BatchSize = 500;
 start_id = 1:BatchSize:1 + BatchNumber * BatchSize;
 for k = 1:BatchNumber
     end_id = start_id(k) + BatchSize - 1;
     data = [];
     tic
     parfor i = start_id(k):end_id
-        [Ex, Ey] = E_field(Config_file, i, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
-        E_obs2 = [Ex; Ey];
-        F_obs = E_obs2 - E_obs1;
+        [Ex2, Ey2] = E_field(Config_file, i+1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+        Fx = Ex2 - Ex1;
+        Fy = Ey2 - Ey1;
+        F_obs = [Fx; Fy];
+        dE_total = repmat(sqrt(Fx.^2 + Fy.^2), 2, 1);
+        F_obs = F_obs + dE_total*Noise_level.*randn(length(F_obs), 1);
         data = [data; F_obs'];
     end
     toc
-    save([dataPath 'Fracturing#' num2str(k, '%02d') '.mat'], 'data');
+    if Noise_level ~= 0
+        save([dataPath 'Noise' num2str(Noise_level) '_' PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
+    else
+        save([dataPath PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
+    end
 end
 
 
