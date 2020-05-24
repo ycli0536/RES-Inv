@@ -14,15 +14,16 @@ savePath = PATH.savePath_PC; % home dir
 dataPath = PATH.dataPath_PC; % E-field data path
 data_file = PATH.data_file; % directions and fracCon data
 
-targetPath = PATH.targetPath_PC; % images path
+targetPath = PATH.targetPath_PC; % amp_ang/images path
 if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
 
+% inputs for function imagexyc
 shape_data = load([savePath, data_file]);
+labels = shape_data.directions;
+fracCons = shape_data.fracCon * ones(length(shape_data.C), 1);
 
 dataGrouplist = dir([dataPath 'Fracturing' '*.mat']);
 
-labels = shape_data.directions;
-fracCons = shape_data.fracCon * ones(length(shape_data.C), 1);
 data = [];
 for i = 1:length(dataGrouplist)
     temp = load([dataPath dataGrouplist(i).name]);
