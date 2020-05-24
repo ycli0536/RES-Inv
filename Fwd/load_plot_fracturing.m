@@ -23,7 +23,7 @@ if strcmpi(Config_file,'ModelsDesign_2d.ini')
     labels = shape_data.directions;
     fracCons = shape_data.fracCon * ones(length(shape_data.C), 1);
     
-    dataGrouplist = dir([dataPath 'Fracturing' '*.mat']);
+    dataGrouplist = dir([dataPath PATH.data_prefix '*.mat']);
     
     data = [];
     for i = 1:length(dataGrouplist)
@@ -34,22 +34,24 @@ elseif strcmpi(Config_file,'ModelsDesign_2d_test.ini')
     savePath = PATH.savePath_PC; % home dir
     testPath = PATH.testPath_PC; % test and pred dataset E-field data path
     
-    test_dataGrouplist = dir([testPath 'test_Fracturing' '*.mat']);
+    test_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
     test_data = [];
     for i = 1:length(test_dataGrouplist)
         temp = load([testPath test_dataGrouplist(i).name]);
         test_data = [test_data; temp.data];
     end
+    data = test_data;
 elseif strcmpi(Config_file,'ModelsDesign_2d_pred.ini')
     savePath = PATH.savePath_PC; % home dir
     testPath = PATH.testPath_PC; % test and pred dataset E-field data path
     
-    pred_dataGrouplist = dir([testPath 'pred_Fracturing' '*.mat']);
+    pred_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
     pred_data = [];
     for i = 1:length(pred_dataGrouplist)
         temp = load([testPath pred_dataGrouplist(i).name]);
         pred_data = [pred_data; temp.data];
     end
+    data = pred_data;
 end
 
 % figure; histogram(log10(abs(data)))

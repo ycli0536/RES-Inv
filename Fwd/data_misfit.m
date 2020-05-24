@@ -11,14 +11,14 @@ PATH = config_parser(Config_file, 'PATH');
 savePath = PATH.savePath_PC; % home dir
 testPath = PATH.testPath_PC; % test and pred dataset E-field data path
 
-test_dataGrouplist = dir([testPath 'test_Fracturing' '*.mat']);
+test_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
 test_data = [];
 for i = 1:length(test_dataGrouplist)
     temp = load([testPath test_dataGrouplist(i).name]);
     test_data = [test_data; temp.data];
 end
 
-pred_dataGrouplist = dir([testPath 'pred_Fracturing' '*.mat']);
+pred_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
 pred_data = [];
 for i = 1:length(pred_dataGrouplist)
     temp = load([testPath pred_dataGrouplist(i).name]);
