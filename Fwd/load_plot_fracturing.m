@@ -10,24 +10,46 @@ clear
 Config_file = 'ModelsDesign_2d.ini';
 PATH = config_parser(Config_file, 'PATH');
 
-savePath = PATH.savePath_PC; % home dir
-dataPath = PATH.dataPath_PC; % E-field data path
-data_file = PATH.data_file; % directions and fracCon data
-
-targetPath = PATH.targetPath_PC; % amp_ang/images path
-if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
-
-% inputs for function imagexyc
-shape_data = load([savePath, data_file]);
-labels = shape_data.directions;
-fracCons = shape_data.fracCon * ones(length(shape_data.C), 1);
-
-dataGrouplist = dir([dataPath 'Fracturing' '*.mat']);
-
-data = [];
-for i = 1:length(dataGrouplist)
-    temp = load([dataPath dataGrouplist(i).name]);
-    data = [data; temp.data];
+if strcmpi(Config_file,'ModelsDesign_2d.ini')
+    savePath = PATH.savePath_PC; % home dir
+    dataPath = PATH.dataPath_PC; % E-field data path
+    data_file = PATH.data_file; % directions and fracCon data
+    
+    targetPath = PATH.targetPath_PC; % amp_ang/images path
+    if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
+    
+    % inputs for function imagexyc
+    shape_data = load([savePath, data_file]);
+    labels = shape_data.directions;
+    fracCons = shape_data.fracCon * ones(length(shape_data.C), 1);
+    
+    dataGrouplist = dir([dataPath 'Fracturing' '*.mat']);
+    
+    data = [];
+    for i = 1:length(dataGrouplist)
+        temp = load([dataPath dataGrouplist(i).name]);
+        data = [data; temp.data];
+    end
+elseif strcmpi(Config_file,'ModelsDesign_2d_test.ini')
+    savePath = PATH.savePath_PC; % home dir
+    testPath = PATH.testPath_PC; % test and pred dataset E-field data path
+    
+    test_dataGrouplist = dir([testPath 'test_Fracturing' '*.mat']);
+    test_data = [];
+    for i = 1:length(test_dataGrouplist)
+        temp = load([testPath test_dataGrouplist(i).name]);
+        test_data = [test_data; temp.data];
+    end
+elseif strcmpi(Config_file,'ModelsDesign_2d_pred.ini')
+    savePath = PATH.savePath_PC; % home dir
+    testPath = PATH.testPath_PC; % test and pred dataset E-field data path
+    
+    pred_dataGrouplist = dir([testPath 'pred_Fracturing' '*.mat']);
+    pred_data = [];
+    for i = 1:length(pred_dataGrouplist)
+        temp = load([testPath pred_dataGrouplist(i).name]);
+        pred_data = [pred_data; temp.data];
+    end
 end
 
 % figure; histogram(log10(abs(data)))
