@@ -7,7 +7,7 @@
 
 clear
 
-Config_file = 'ModelsDesign_2d_noise0.05.ini';
+Config_file = 'ModelsDesign_2d_casingCon.ini';
 PATH = config_parser(Config_file, 'PATH');
 
 if strcmpi(Config_file,'ModelsDesign_2d.ini')
@@ -30,11 +30,24 @@ if strcmpi(Config_file,'ModelsDesign_2d.ini')
         temp = load([dataPath dataGrouplist(i).name]);
         data = [data; temp.data];
     end
+elseif strcmpi(Config_file,'ModelsDesign_2d_casingCon.ini')
+    savePath = PATH.savePath_PC; % home dir
+    dataPath = PATH.dataPath_PC; % E-field data with casingCon change
+    targetPath = PATH.targetPath_PC; % amp_ang/images path
+    if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
+    
+    casing_dataGrouplist = dir([dataPath PATH.data_prefix '*.mat']);
+    casing_data = [];
+    for i = 1:length(casing_dataGrouplist)
+        temp = load([dataPath casing_dataGrouplist(i).name]);
+        casing_data = [casing_data; temp.data];
+    end
+    data = casing_data;
 else
     other = config_parser(Config_file, 'data_processing');
     Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
     savePath = PATH.savePath_PC; % home dir
-    dataPath = PATH.testPath_PC; % test and pred dataset E-field data path
+    dataPath = PATH.dataPath_PC; % E-field data with noise
     targetPath = PATH.targetPath_PC; % amp_ang/images path
     if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
     
