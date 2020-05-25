@@ -3,11 +3,11 @@
 % savePath_PC -> savePath_HPC (including setup.m)
 % dataPath_PC -> dataPath_HPC
 % targetPath_PC -> targetPath_HPC
-% BatchNumber and BatchSize
+% Config_file, BatchNumber and BatchSize
 
 clear
 
-Config_file = 'ModelsDesign_2d.ini';
+Config_file = 'ModelsDesign_2d_noise0.05.ini';
 PATH = config_parser(Config_file, 'PATH');
 
 if strcmpi(Config_file,'ModelsDesign_2d.ini')
@@ -30,28 +30,21 @@ if strcmpi(Config_file,'ModelsDesign_2d.ini')
         temp = load([dataPath dataGrouplist(i).name]);
         data = [data; temp.data];
     end
-elseif strcmpi(Config_file,'ModelsDesign_2d_test.ini')
+else
+    other = config_parser(Config_file, 'data_processing');
+    Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
     savePath = PATH.savePath_PC; % home dir
-    testPath = PATH.testPath_PC; % test and pred dataset E-field data path
+    dataPath = PATH.testPath_PC; % test and pred dataset E-field data path
+    targetPath = PATH.targetPath_PC; % amp_ang/images path
+    if exist(targetPath, 'dir') == 0;     mkdir(targetPath);     end
     
-    test_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
-    test_data = [];
-    for i = 1:length(test_dataGrouplist)
-        temp = load([testPath test_dataGrouplist(i).name]);
-        test_data = [test_data; temp.data];
+    noise_dataGrouplist = dir([dataPath 'Noise' num2str(Noise_level) '_' PATH.data_prefix '*.mat']);
+    noise_data = [];
+    for i = 1:length(noise_dataGrouplist)
+        temp = load([dataPath noise_dataGrouplist(i).name]);
+        noise_data = [noise_data; temp.data];
     end
-    data = test_data;
-elseif strcmpi(Config_file,'ModelsDesign_2d_pred.ini')
-    savePath = PATH.savePath_PC; % home dir
-    testPath = PATH.testPath_PC; % test and pred dataset E-field data path
-    
-    pred_dataGrouplist = dir([testPath PATH.data_prefix '*.mat']);
-    pred_data = [];
-    for i = 1:length(pred_dataGrouplist)
-        temp = load([testPath pred_dataGrouplist(i).name]);
-        pred_data = [pred_data; temp.data];
-    end
-    data = pred_data;
+    data = noise_data;
 end
 
 % figure; histogram(log10(abs(data)))
