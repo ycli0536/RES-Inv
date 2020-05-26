@@ -13,7 +13,7 @@ import time
 import shutil
 import json
 
-os.environ['CUDA_VISIBLE_DEVICES']='0'
+os.environ['CUDA_VISIBLE_DEVICES']='7'
 
 # tf.debugging.set_log_device_placement(True)
 print('dataPath is :', gConfig['datapath'])
@@ -52,13 +52,6 @@ def read_data(data_format, label_format):
     else:
         print('--- Wrong label format! ---')
     return train_data, train_target
-
-
-train_data, train_target = read_data(data_format=gConfig['input_format'],
-                                     label_format=gConfig['label_format'])
-print('train_data shape: ', train_data.shape)
-print('train_target shape: ', train_target.shape)
-input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
 
 
 def save_trainingData_np(save_path, train_data, vail_data):
@@ -122,6 +115,12 @@ def movefile(file, src_path, dst_path):
 
 
 def train():
+    train_data, train_target = read_data(data_format=gConfig['input_format'],
+                                         label_format=gConfig['label_format'])
+    print('train_data shape: ', train_data.shape)
+    print('train_target shape: ', train_target.shape)
+    input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
+
     model = creat_model()
     models_dir = os.path.join(gConfig['infopath'], gConfig['temp_models'])
     model_name = gConfig['model_name_prefix'] + '.{epoch:04d}.h5'
@@ -191,6 +190,7 @@ def train():
         parser.set('ints', 'model_id_count', str(model_id_count))
         print(model_id_count)
     shutil.rmtree(models_dir)
+    print('model_name created in config file')
 
     # save history information
     jsObj = json.dumps(history.history, cls=MyEncoder)
@@ -203,7 +203,6 @@ def train():
     parser.set('strings', 'mode', 'predict')
     parser.write(open(config_file, 'w'))
     shutil.copyfile(config_file, os.path.join(info_path, config_file))
-    print('model_name created in config file')
     print('corresponding config information saved at %s' % (os.path.join(info_path, config_file)))
 
     # save data in npy format
@@ -218,13 +217,13 @@ def predict(test_data, model_path, model_count):
     for i in range(model_count):
         model_name = gConfig['model_id%d' % (i+1)]
         targetModel = os.path.join(model_path, model_name)
-        print('target model path is: %s' % (targetModel))
         model = load_model(targetModel)
         X_test = test_data[0]
         y_test = test_data[1]
         scores = model.evaluate(X_test, y_test, batch_size=gConfig['batch_size'], verbose=1)
 
         y_pred = model.predict(X_test, batch_size=gConfig['batch_size'])
+        print('target model path is: %s' % (targetModel))
         np.save(os.path.join(model_path, 'y_pred_' + model_name), y_pred)
 
         for id, lf in enumerate(model.metrics_names):
@@ -234,6 +233,9 @@ def predict(test_data, model_path, model_count):
     parser.read(config_file)
     parser.set('strings', 'mode', 'train')
     parser.write(open(config_file, 'w'))
+
+    shutil.copyfile(config_file, os.path.join(model_path, config_file))
+    print('corresponding config information saved at %s' % (os.path.join(model_path, config_file)))
 
 
 if __name__ == '__main__':
