@@ -1,10 +1,10 @@
 
 %% initial
 % PC terminal
-% switch parpool(32) and parfor
+% switch parpool(40) and parfor
 % savePath_HPC -> savePath_PC (including setup.m)
 % dataPath_HPC -> dataPath_PC
-% pre-setting values in this code: Config_file; BatchNumber; BatchSize; 
+% pre-setting values in this code: Config_file; BatchNumber; BatchSize
 
 clear
 parpool(40);
@@ -49,8 +49,9 @@ for k = 1:BatchNumber
         Fx = Ex2 - Ex1;
         Fy = Ey2 - Ey1;
         F_obs = [Fx; Fy];
-        dE_total = repmat(sqrt(Fx.^2 + Fy.^2), 2, 1);
-        F_obs = F_obs + dE_total*Noise_level.*randn(length(F_obs), 1);
+%         dE_total = repmat(sqrt(Fx.^2 + Fy.^2), 2, 1);
+%         F_obs = F_obs + dE_total*Noise_level.*randn(length(F_obs), 1);
+        F_obs = F_obs + F_obs * Noise_level .* randn(length(F_obs), 1);
         data = [data; F_obs'];
     end
     toc
