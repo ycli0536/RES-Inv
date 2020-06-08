@@ -200,7 +200,6 @@ def train():
 
     # save ini in model folder
     parser.set('strings', 'predictionPath', info_path)
-    parser.set('strings', 'mode', 'predict')
     parser.write(open(config_file, 'w'))
     shutil.copyfile(config_file, os.path.join(info_path, config_file))
     print('corresponding config information saved at %s' % (os.path.join(info_path, config_file)))
@@ -228,11 +227,6 @@ def predict(test_data, model_path, model_count):
 
         for id, lf in enumerate(model.metrics_names):
             print('Best test (' + lf + '): ', scores[id])
-
-    parser = configparser.ConfigParser()
-    parser.read(config_file)
-    parser.set('strings', 'mode', 'train')
-    parser.write(open(config_file, 'w'))
 
     shutil.copyfile(config_file, os.path.join(model_path, config_file))
     print('corresponding config information saved at %s' % (os.path.join(model_path, config_file)))
