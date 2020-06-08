@@ -16,9 +16,11 @@ def get_config(config_file):
 
 parser = argparse.ArgumentParser(description='read config.ini')
 parser.add_argument("filename", help="please input config file")
+parser.add_argument("mode", help="please select the mode: training or prediction")
 args = parser.parse_args()
 
 config_file = args.filename
+mode = args.mode
 
 gConfig = {}
 gConfig = get_config(config_file=config_file)

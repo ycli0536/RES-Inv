@@ -6,7 +6,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
 
 from data_generation import data_preprocessing
-from getConfig import gConfig, config_file
+from getConfig import gConfig, config_file, mode
 import configparser
 import os
 import time
@@ -93,7 +93,7 @@ def lr_schedule(epoch):
     return lr
 
 
-def creat_model():
+def creat_model(input_shape):
     model = fcnModel(input_shape=input_shape)
     model = model.createModel(summary=True,
                               input_format=gConfig['input_format'],
@@ -121,7 +121,7 @@ def train():
     print('train_target shape: ', train_target.shape)
     input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
 
-    model = creat_model()
+    model = creat_model(input_shape)
     models_dir = os.path.join(gConfig['infopath'], gConfig['temp_models'])
     model_name = gConfig['model_name_prefix'] + '.{epoch:04d}.h5'
     if not os.path.isdir(models_dir):
@@ -239,9 +239,9 @@ def predict(test_data, model_path, model_count):
 
 
 if __name__ == '__main__':
-    if gConfig['mode'] == 'train':
+    if mode == 'train':
         train()
-    if gConfig['mode'] == 'predict':
+    if mode == 'predict':
         X_test = np.load(os.path.join(gConfig['predictionpath'], 'X_test.npy'))
         y_test = np.load(os.path.join(gConfig['predictionpath'], 'y_test.npy'))
 
