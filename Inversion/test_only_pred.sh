@@ -10,6 +10,10 @@ set -e
 
 eval "$(conda shell.bash hook)"
 conda activate tf2.1
+
+# 第一次需要通过y_test生成X_test
+python inputData_generation.py config_pred.ini predict
+
 python excute.py config_pred.ini predict
 echo "预测任务1/1已于$(date +'%F %T')完成"
 echo "Prediction task 1/1 has been done at $(date +'%F %T')"
