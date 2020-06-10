@@ -1,0 +1,16 @@
+name: tf2.1-DL
+
+channels:
+  - defaults
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+
+dependencies:
+  - python>=3.6
+  - matplotlib
+  - jupyter
+  - pillow
+  - scikit-learn
+  - tensorflow-gpu==2.1.0
+  - cudatoolkit=10.1.243
+  - cudnn=7.6.5
