@@ -3,7 +3,7 @@ import numpy as np
 from model import fcnModel
 
 from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, ReduceLROnPlateau, TensorBoard
 
 from data_generation import data_preprocessing
 from getConfig import gConfig, config_file, mode
@@ -12,13 +12,6 @@ import os
 import time
 import shutil
 import json
-
-os.environ['CUDA_VISIBLE_DEVICES']='7'
-
-# tf.debugging.set_log_device_placement(True)
-print('dataPath is :', gConfig['datapath'])
-print('labelPath is: ', gConfig['labelpath'])
-generator = data_preprocessing()
 
 
 def read_data(data_format, label_format):
@@ -115,44 +108,72 @@ def movefile(file, src_path, dst_path):
 
 
 def train():
+    """ U-net neural network training
+
+    1. Load data and network model
+    2. Settings: loss function + callbacks
+    3. Saving model and necessary log information
+    """
+    ## Pre-training
+    # load and split data
     train_data, train_target = read_data(data_format=gConfig['input_format'],
                                          label_format=gConfig['label_format'])
     print('train_data shape: ', train_data.shape)
     print('train_target shape: ', train_target.shape)
     input_shape, (X_train, y_train), (X_vail, y_vail), (X_test, y_test) = generator.Split(train_data=train_data, train_target=train_target)
 
+    # load network (model) architecture
     model = creat_model(input_shape)
+
+    ## Settings
+    # 1. Set loss function and monitor during training
+    if gConfig['loss_function'] == 'rmse':
+        monitor = 'val_' + gConfig['loss_function']
+    else:
+        monitor = 'val_loss'
+
+    # 2. Callbacks
+    # temp models' saving path
     models_dir = os.path.join(gConfig['infopath'], gConfig['temp_models'])
     model_name = gConfig['model_name_prefix'] + '.{epoch:04d}.h5'
     if not os.path.isdir(models_dir):
         os.makedirs(models_dir)
     filepath = os.path.join(models_dir, model_name)
 
-    if gConfig['loss_function'] == 'rmse':
-        monitor = 'val_' + gConfig['loss_function']
-    else:
-        monitor = 'val_loss'
-
+    # Callback: save the Keras model or model weights at some frequency
     checkpoint = ModelCheckpoint(filepath=filepath,
                                  monitor=monitor,
                                  mode='min',
                                  verbose=0,
                                  save_best_only=True)
 
+    # Callback: use custom learning rate scheduler
     lr_scheduler = LearningRateScheduler(lr_schedule, verbose=0)
 
+    # Callback: reduce learning rate under certain condition
     lr_reducer = ReduceLROnPlateau(monitor=monitor,
                                    factor=np.sqrt(0.1),
                                    cooldown=0,
                                    patience=5,
                                    min_lr=0.5e-6)
 
+    time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
+    model_info_dir = os.path.join(gConfig['infopath'], 'models')
+    Model_info = 'Model' + time_info
+    info_path = os.path.join(model_info_dir, Model_info)
+    if not os.path.isdir(info_path):
+        os.makedirs(info_path)
+
+    tensorboard_callback = TensorBoard(info_path, histogram_freq=1)
+
+    # Callback: earlystopping
     # earlystopping = EarlyStopping(monitor=monitor,
     #                               patience=100,
     #                               mode='auto')
 
-    callbacks = [checkpoint, lr_reducer, lr_scheduler]
+    callbacks = [checkpoint, lr_reducer, lr_scheduler, tensorboard_callback]
 
+    ## model training
     start_time = time.time()
     history = model.fit(X_train, y_train,
                         batch_size=gConfig['batch_size'],
@@ -164,13 +185,7 @@ def train():
     duration = time.time() - start_time
     print('Duration time (s): ', duration)
 
-    model_info_dir = os.path.join(gConfig['infopath'], 'models')
-    time_info = time.strftime('%Y%m%d_%H%M', time.localtime(time.time()))
-    Model_info = 'Model' + time_info
-    info_path = os.path.join(model_info_dir, Model_info)
-    if not os.path.isdir(info_path):
-        os.makedirs(info_path)
-
+    ## Save outputs to info_path
     # save last one model either overfitting or underfitting
     last_model_name = gConfig['model_name_prefix'] + '.%04d.h5' % gConfig['epochs']
     model.save(os.path.join(info_path, last_model_name))
@@ -233,6 +248,15 @@ def predict(test_data, model_path, model_count):
 
 
 if __name__ == '__main__':
+
+    # select GPU device
+    os.environ['CUDA_VISIBLE_DEVICES']='0'
+
+    # tf.debugging.set_log_device_placement(True)
+    print('dataPath is :', gConfig['datapath'])
+    print('labelPath is: ', gConfig['labelpath'])
+    generator = data_preprocessing()
+
     if mode == 'train':
         train()
     if mode == 'predict':
