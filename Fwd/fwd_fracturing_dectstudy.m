@@ -151,40 +151,4 @@ end
 
 %% differential E (log) vs differential rho_a
 % diff_flag = true;
-
-% differential Ey
-I = source(1, 4);
-diff_Ey = diff_data(1, length(dataLoc_y)+1:end);
-
-amp_y = reshape(diff_Ey, 51, 51);
-amp_logy = log10(abs(amp_y));
-% amp_logy(26, 26) = nan;
-
-% --apparent resistivity formula--
-Ey1 = data(1, length(dataLoc_y)+1:end);
-Ey2 = data(2, length(dataLoc_y)+1:end);
-amp_y1 = reshape(Ey1, 51, 51);
-amp_y2 = reshape(Ey2, 51, 51);
-
-index = reshape((1:2601)', 51, 51);
-profile_loc = index(:, 26);
-M = E.My(profile_loc, :);
-N = E.Ny(profile_loc, :);
-
-AM = sqrt(sum((M-[0 0 0]).^2, 2));
-AN = sqrt(sum((N-[0 0 0]).^2, 2));
-MN = sqrt(sum((M-N).^2, 2));
-rho_a1 = (2 * pi .* AM .* AN ./ MN) .* (abs(amp_y1(:, 26)) .* MN ./ I);
-rho_a2 = (2 * pi .* AM .* AN ./ MN) .* (abs(amp_y2(:, 26)) .* MN ./ I);
-
-figure; 
-yyaxis left
-plot(amp_logy(:, 26), '.-')
-title('Differential Electric field data vs Apparent resistivity')
-xlabel('survey line points')
-ylabel('\Delta Ey (log)')
-
-yyaxis right
-plot(abs(rho_a2 - rho_a1), '.-')
-ylabel('\Delta \rho_a')
-xlim([0 51])
+% refer to https://gist.github.com/ycli0536/8e3e4e4fa1c6da5110a96963a74065f8
