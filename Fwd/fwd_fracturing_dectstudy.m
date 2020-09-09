@@ -2,15 +2,15 @@
 % fracLoc_origin = [300 300 -50 50 -1850 -1950];
 % fracLoc_upExp = [300 300 -50 50 -1800 -1950];
 % fracLoc_downExp = [300 300 -50 50 -1850 -2000];
-% fracLoc_leftExp = [300 300 -100 50 -1850 -1950];
 % fracLoc_rightExp = [300 300 -50 100 -1850 -1950];
+% fracLoc_leftExp = [300 300 -100 50 -1850 -1950];
 
 %% initial
 % PC terminal
 % pre-setting values in this code: Config_file
 
 clear
-Config_file = 'ModelsDesign_2d_3wells_wellB.ini';
+Config_file = 'ModelsDesign_2d_3wells_base500ohmm.ini';
 diff_flag = true; % whether to calculate differentical data
 
 PATH = config_parser(Config_file, 'PATH');
@@ -94,7 +94,7 @@ end
 
 % for RESnet code requirement
 % if diff_flag
-%     save([dataPath 'directionalfluid_3wells_wellB_data.mat'], 'diff_data')
+%     save([dataPath 'directionalfluid_3wells_1000Hwell.mat'], 'diff_data')
 % else
 %     save([dataPath 'homo50ohmm_data.mat'], 'data')
 % end
@@ -148,3 +148,43 @@ else
     c.Label.Position = [0.5 -1.25 0];
     colormap(hsv)
 end
+
+%% differential E (log) vs differential rho_a
+% diff_flag = true;
+
+% differential Ey
+I = source(1, 4);
+diff_Ey = diff_data(1, length(dataLoc_y)+1:end);
+
+amp_y = reshape(diff_Ey, 51, 51);
+amp_logy = log10(abs(amp_y));
+% amp_logy(26, 26) = nan;
+
+% --apparent resistivity formula--
+Ey1 = data(1, length(dataLoc_y)+1:end);
+Ey2 = data(2, length(dataLoc_y)+1:end);
+amp_y1 = reshape(Ey1, 51, 51);
+amp_y2 = reshape(Ey2, 51, 51);
+
+index = reshape((1:2601)', 51, 51);
+profile_loc = index(:, 26);
+M = E.My(profile_loc, :);
+N = E.Ny(profile_loc, :);
+
+AM = sqrt(sum((M-[0 0 0]).^2, 2));
+AN = sqrt(sum((N-[0 0 0]).^2, 2));
+MN = sqrt(sum((M-N).^2, 2));
+rho_a1 = (2 * pi .* AM .* AN ./ MN) .* (abs(amp_y1(:, 26)) .* MN ./ I);
+rho_a2 = (2 * pi .* AM .* AN ./ MN) .* (abs(amp_y2(:, 26)) .* MN ./ I);
+
+figure; 
+yyaxis left
+plot(amp_logy(:, 26), '.-')
+title('Differential Electric field data vs Apparent resistivity')
+xlabel('survey line points')
+ylabel('\Delta Ey (log)')
+
+yyaxis right
+plot(abs(rho_a2 - rho_a1), '.-')
+ylabel('\Delta \rho_a')
+xlim([0 51])
