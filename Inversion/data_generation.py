@@ -81,6 +81,7 @@ class data_preprocessing(object):
     def label_2d(self, labelPath, label_file, num_samples,
                  label_dim, num_channels):
         shape_data = loadmat(os.path.join(labelPath, label_file))["ShapeCollect"]
+        fracLoc = loadmat(os.path.join(labelPath, label_file))["fracLoc"]
         data_FracturingShape = np.zeros([num_samples, label_dim, label_dim, num_channels])
 
         # verts.shape = (9, num_samples * 2)
@@ -88,7 +89,7 @@ class data_preprocessing(object):
         dim1, dim2 = label_dim, label_dim
         # Create vertex coordinates for each grid cell...
         # (<0,0> is at the top left of the grid in this system)
-        x, y = np.meshgrid(np.linspace(-200, 200, num=dim1), np.linspace(-1700, -2100, num=dim2))
+        x, y = np.meshgrid(np.linspace(fracLoc[0][2], fracLoc[0][3], num=dim1), np.linspace(fracLoc[0][4], fracLoc[0][5], num=dim2))
         x, y = x.flatten(), y.flatten()
 
         points = np.vstack((x, y)).T

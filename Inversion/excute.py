@@ -7,6 +7,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, R
 
 from data_generation import data_preprocessing
 from getConfig import gConfig, config_file, mode
+from scipy.io import savemat
 import configparser
 import os
 import time
@@ -107,12 +108,40 @@ def movefile(file, src_path, dst_path):
         print("move %s -> %s" % (srcfile, dstfile))
 
 
+def ave_pooling(arr, nrows, ncols):
+    """
+    If arr is a 2D array, the returned array should look like n subblocks (nrows * ncols) with
+    each subblock preserving the "physical" layout of arr, where n * nrows * ncols = arr.size.
+    """
+    h, w = arr.shape
+    assert h % nrows == 0, "{} rows is not evenly divisble by {}".format(h, nrows)
+    assert w % ncols == 0, "{} cols is not evenly divisble by {}".format(w, ncols)
+    sub_arrs = arr.reshape(h//nrows, nrows, -1, ncols).swapaxes(1,2).reshape(-1, nrows, ncols)
+    temp = np.empty_like(np.arange(int(h / nrows) * int(w / ncols), dtype=float))
+    for i in range(sub_arrs.shape[0]):
+        temp[i] = np.average(sub_arrs[i])
+    result = temp.reshape((int(h / nrows), int(w / ncols)))
+    return result
+
+
+def coe_generation(input_data, dim=8):
+    num_samples = input_data.shape[0]
+    data_dim = input_data.shape[1]
+    coe = np.empty([num_samples, dim, dim])
+    for i in range(num_samples):
+        label_coe[i] = ave_pooling(input_data[i], nrows=int(data_dim / dim), ncols=int(data_dim / dim))
+    print('coe matrix shape is', coe.shape)
+    return coe
+
+
 def train():
     """ U-net neural network training
 
     1. Load data and network model
     2. Settings: loss function + callbacks
-    3. Saving model and necessary log information
+    3. Duration time report
+    4. Save model and necessary log information
+    5. Save test data (X_test and y_test)
     """
     ## Pre-training
     # load and split data
@@ -227,7 +256,14 @@ def train():
 
 
 def predict(test_data, model_path, model_count):
+    """ U-net neural network prediction
 
+    1. Load optimal network models from training phase
+    2. Prediction (y_pred)
+    3. Evaluation test dataset
+    4. Record prediction path to config file
+    5. Return y_pred for coe generation
+    """
     for i in range(model_count):
         model_name = gConfig['model_id%d' % (i+1)]
         targetModel = os.path.join(model_path, model_name)
@@ -245,6 +281,8 @@ def predict(test_data, model_path, model_count):
 
     shutil.copyfile(config_file, os.path.join(model_path, config_file))
     print('corresponding config information saved at %s' % (os.path.join(model_path, config_file)))
+    # return last y_pred (best one)
+    return y_pred
 
 
 if __name__ == '__main__':
@@ -263,6 +301,14 @@ if __name__ == '__main__':
         X_test = np.load(os.path.join(gConfig['predictionpath'], 'X_test.npy'))
         y_test = np.load(os.path.join(gConfig['predictionpath'], 'y_test.npy'))
 
-        predict(test_data=(X_test, y_test),
-                model_path=gConfig['predictionpath'],
-                model_count=gConfig['model_id_count'])
+        y_pred = predict(test_data=(X_test, y_test),
+                         model_path=gConfig['predictionpath'],
+                         model_count=gConfig['model_id_count'])
+
+        # save test_label_coe and pred_label_coe for calculate data misfit
+        test_label_coe = coe_generation(input_data=np.squeeze(y_test), dim=8)
+        pred_label_coe = coe_generation(input_data=np.squeeze(y_pred), dim=8)
+
+        print('Save coe mat files for datamisfit at %s.' % (gConfig['predictionpath']))
+        savemat(os.path.join(gConfig['predictionpath'], 'test_label_coe.mat'), {'test_label_coe': test_label_coe})
+        savemat(os.path.join(gConfig['predictionpath'], 'pred_label_coe.mat'), {'pred_label_coe': pred_label_coe})
