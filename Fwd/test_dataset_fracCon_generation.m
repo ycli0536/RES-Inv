@@ -4,15 +4,16 @@
 
 clear
 
-Config_file = 'ModelsDesign_2d.ini';
+Config_file = 'ModelsDesign_2d_20200907_datamisfit.ini';
 PATH = config_parser(Config_file, 'PATH');
 Mesh = config_parser(Config_file, 'Mesh');
-testPath = PATH.testPath_PC;
 
 savePath = PATH.savePath_PC;
-if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
-minSize = Mesh.minSize;
+testPath = PATH.testPath_PC;
+test_label_file = PATH.test_label_coe_file;
+pred_label_file = PATH.pred_label_coe_file;
 
+minSize = Mesh.minSize;
 fracLoc = [300 300 -200 200 -1700 -2100];
 fracCon = 250;
 
@@ -21,8 +22,8 @@ tic
 filename_test = 'fracCon250_test_dataset.mat';
 filename_pred = 'fracCon250_pred_dataset.mat';
 count = 1500;
-test_label_coe = load([testPath '20200522_0055_0194_test_label_coe.mat']);
-pred_label_coe = load([testPath '20200522_0055_0194_pred_label_coe.mat']);
+test_label_coe = load([testPath test_label_file]);
+pred_label_coe = load([testPath pred_label_file]);
 [C1, coe1] = fracCon_generator(test_label_coe.test_label_coe, fracLoc, fracCon, minSize, count, ...
                                savePath, filename_test);
 [C2, coe2] = fracCon_generator(pred_label_coe.pred_label_coe, fracLoc, fracCon, minSize, count, ...
