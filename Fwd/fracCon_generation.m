@@ -12,15 +12,16 @@ minSize = Mesh.minSize;
 
 fracLoc = [300 300 -200 200 -1700 -2100];
 fracCon = 250;
+num_vertices = 8;
 
 tic
 count = 30000;
 filename = PATH.data_file;
 [directions, ShapeCollect, C, coe] = ...
-    fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename);
+    fracCon_generator(num_vertices, fracLoc, fracCon, minSize, count, savePath, filename);
 toc
 
-function [directions, ShapeCollect, C, coe] = fracCon_generator(fracLoc, fracCon, minSize, count, savePath, filename)
+function [directions, ShapeCollect, C, coe] = fracCon_generator(num_vertices, fracLoc, fracCon, minSize, count, savePath, filename)
 
 % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
 minSize(3) = - minSize(3);
@@ -68,7 +69,7 @@ center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 C = cell(length(count)+1,1); % one more C data
 C{1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % first for initial E-field data
 coe = cell(length(count),1);
-ShapeCollect = zeros(8, count*2);
+ShapeCollect = zeros(num_vertices, count*2);
 directions = [];
 for i = 2:count + 1
     % randomShape generation
