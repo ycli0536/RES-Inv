@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Feb 2020
+@author: Yinchu Li (11849188@mail.sustech.edu.cn)
+"""
+
+################################################
+########        NETWORK   DESIGN        ########
+################################################
+
+
 from getConfig import gConfig
 from tensorflow.keras.layers import Activation, BatchNormalization, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, LeakyReLU

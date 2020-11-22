@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Feb 2020
+@author: Yinchu Li (11849188@mail.sustech.edu.cn)
+"""
+
+##############################################################
+########        EXCUTE TRAINING AND PREDICTION        ########
+##############################################################
+
+
 import tensorflow as tf
 import numpy as np
 from model import fcnModel
@@ -76,7 +87,9 @@ class MyEncoder(json.JSONEncoder):
 
 def lr_schedule(epoch):
     lr = 1e-3
-    if epoch > 160:
+    if epoch >200:
+        lr *= pow(5e-1, 5)
+    elif epoch > 160:
         lr *= pow(5e-1, 4)
     elif epoch > 120:
         lr *= pow(5e-1, 3)
@@ -129,7 +142,7 @@ def coe_generation(input_data, dim=8):
     data_dim = input_data.shape[1]
     coe = np.empty([num_samples, dim, dim])
     for i in range(num_samples):
-        label_coe[i] = ave_pooling(input_data[i], nrows=int(data_dim / dim), ncols=int(data_dim / dim))
+        coe[i] = ave_pooling(input_data[i], nrows=int(data_dim / dim), ncols=int(data_dim / dim))
     print('coe matrix shape is', coe.shape)
     return coe
 
@@ -306,8 +319,8 @@ if __name__ == '__main__':
                          model_count=gConfig['model_id_count'])
 
         # save test_label_coe and pred_label_coe for calculate data misfit
-        test_label_coe = coe_generation(input_data=np.squeeze(y_test), dim=8)
-        pred_label_coe = coe_generation(input_data=np.squeeze(y_pred), dim=8)
+        test_label_coe = coe_generation(input_data=np.squeeze(y_test, axis=3), dim=8)
+        pred_label_coe = coe_generation(input_data=np.squeeze(y_pred, axis=3), dim=8)
 
         print('Save coe mat files for datamisfit at %s.' % (gConfig['predictionpath']))
         savemat(os.path.join(gConfig['predictionpath'], 'test_label_coe.mat'), {'test_label_coe': test_label_coe})

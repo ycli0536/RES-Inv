@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Feb 2020
+@author: Yinchu Li (11849188@mail.sustech.edu.cn)
+"""
+
+##########################################
+########        INI READER        ########
+##########################################
+
+
 import configparser
 import argparse
 
