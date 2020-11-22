@@ -1,9 +1,13 @@
 
-function [C ,ids, intersectL, casingCon_discrete] = casingCon_generation(Length_VH, edgeSize, n, Count)
-% Length_VH: [lengthV, lengthH] must be integer multiple of edgeSize 
+function [C ,ids, intersectL, casingCon_discrete] = ...
+                casingCon_generation(Length_VH, edgeSize, n, Count, savePath, filename)
+% Length_VH: [lengthV, lengthH] must be integer multiple of edgeSize
 % edgeSize: The edge length
 % n: Discrete to 1/n of the original length of each edge
 % Count: The number of samples to be generated
+% savePath and filename: PATH to save the generated data
+
+% dbstop if error
 
     LengthV = Length_VH(1);
     LengthH = Length_VH(2);
@@ -20,7 +24,7 @@ function [C ,ids, intersectL, casingCon_discrete] = casingCon_generation(Length_
     
     intact_casingCon = 1.5e5;
     casingCon = intact_casingCon * ones(blk_numV + blk_numH, 1);
-    C = cell(Count,1);
+    C = cell(Count + 1, 1);
     C{1, 1} = [casingLoc casingCon];
     ids = nan(Count, 3);
     casingCon_discrete = nan((LengthV + LengthH) / (edgeSize / n) + 1, 2 * Count);
@@ -67,12 +71,11 @@ function [C ,ids, intersectL, casingCon_discrete] = casingCon_generation(Length_
         con_b = log10(intact_casingCon);
         v = log10(intact_casingCon) * ones(length(new_nodes), 1);
         [~, loc, ~] = intersect(new_nodes, control_points, 'stable');
-        v(loc + 1:loc + length(control_points)) = [log10(intact_casingCon); ...
-            (con_b - con_a) * rand(length(control_points)-2, 1) + con_a; log10(intact_casingCon)];
+        v(loc) = [log10(intact_casingCon); (con_b - con_a) * rand(length(control_points)-2, 1) + con_a; log10(intact_casingCon)];
         zz = linspace(0, -(LengthV + LengthH), (LengthV + LengthH) / (edgeSize / n) + 1);
         vv = pchip(new_nodes, v, zz); % Hermite interpolation (real casingCon distribution)
-        figure; plot(new_nodes, v, 'o', zz, vv)
-        ylim([0, con_b])
+%         figure; plot(new_nodes, v, 'o', zz, vv)
+%         ylim([0, con_b])
         
         for i = 1:length(pseudo_nodes) - 1
             eq_anomalous_casingRes = abs( trapz(zz(n * (i - 1) + 1: n * i + 1), 1./10.^vv(n * (i - 1) + 1: n * i + 1)) );
@@ -81,6 +84,8 @@ function [C ,ids, intersectL, casingCon_discrete] = casingCon_generation(Length_
         
         C{k,1} = [casingLoc casingCon];
         ids(k - 1, :) = [Tb, Lb, sum(intersectL(:, k - 1) ~= 0)];
-        casingCon_discrete(:, k - 1:k) = [zz' 10.^vv'];
+        casingCon_discrete(:, 2 * (k - 1) - 1: 2 * (k - 1)) = [zz' 10.^vv'];
     end
+    
+    save([savePath filename], 'C', 'casingCon_discrete', 'ids')
 end

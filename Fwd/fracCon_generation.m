@@ -66,7 +66,7 @@ end
 center_dim1 = (fracLoc(index(1,1)) + fracLoc(index(1,2)))/2;
 center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 
-C = cell(length(count)+1,1); % one more C data
+C = cell(count+1,1); % one more C data
 C{1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % first for initial E-field data
 coe = cell(length(count),1);
 ShapeCollect = zeros(num_vertices, count*2);
