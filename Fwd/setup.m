@@ -1,21 +1,16 @@
-function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, minSize, source, dataLoc, E, MaxCount] = ...
-            setup(Config_file, count, blk_type)
+function [nodeX, nodeY, nodeZ, edgeCon, faceCon, cellCon, source, dataLoc, E] = ...
+            setup(Config_file, count, blk_type, blk_info)
 
 RectMeshModelsDesign = config_parser(Config_file, 'RectMeshModelsDesign');
 ABMN = config_parser(Config_file, 'ABMNsettings');
 Mesh = config_parser(Config_file, 'Mesh');
-PATH = config_parser(Config_file, 'PATH');
-
 
 %---Setup
 earthLoc = RectMeshModelsDesign.earthLoc;
 earthCon = RectMeshModelsDesign.earthCon;
 
-blk_data = load([PATH.savePath_PC PATH.data_file]);
-blk_info = blk_data.C; % Cell data structure
 blkLoc_added = blk_info{count, 1}(:, 1:6);
 blkCon_added = blk_info{count, 1}(:, 7);
-MaxCount = length(blk_info);
 
 if strcmpi(blk_type, 'fracturing')
     casingLoc = RectMeshModelsDesign.casingLoc;
