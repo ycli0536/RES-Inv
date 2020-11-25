@@ -1,27 +1,13 @@
-% PC terminal
-% savePath_HPC -> savePath_PC
-
-clear
-
-Config_file = 'ModelsDesign_2d.ini';
-PATH = config_parser(Config_file, 'PATH');
-Mesh = config_parser(Config_file, 'Mesh');
-savePath = PATH.savePath_PC;
-if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
-minSize = Mesh.minSize;
-
-fracLoc = [300 300 -200 200 -1700 -2100];
-fracCon = 250;
-num_vertices = 8;
-
-tic
-count = 30000;
-filename = PATH.data_file;
-[directions, ShapeCollect, C, coe] = ...
-    fracCon_generator(num_vertices, fracLoc, fracCon, minSize, count, savePath, filename);
-toc
-
-function [directions, ShapeCollect, C, coe] = fracCon_generator(num_vertices, fracLoc, fracCon, minSize, count, savePath, filename)
+function [directions, ShapeCollect, C, coe] = ...
+            fracCon_generation(num_vertices, fracLoc, fracCon, minSize, Count, savePath)
+% num_vertices: The number of vertices of set polygon (e.g., 8)
+% fracLoc: [xmin xmax ymin ymax zmax zmin] the area where fractruing plane
+% is set (e.g., [300 300 -200 200 -1700 -2100])
+% fracCon: A simplified conductivity value of fracturing zone reflecting
+% saturation (e.g., fracCon = 250)
+% minSize: Mesh size of core volume area (e.g., [50, 50, 50])
+% Count: The number of samples to be generated (e.g., 30000)
+% savePath: PATH to save the generated data with blk_info
 
 % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
 minSize(3) = - minSize(3);
@@ -66,12 +52,12 @@ end
 center_dim1 = (fracLoc(index(1,1)) + fracLoc(index(1,2)))/2;
 center_dim2 = (fracLoc(index(2,1)) + fracLoc(index(2,2)))/2;
 
-C = cell(count+1,1); % one more C data
+C = cell(Count+1,1); % one more C data
 C{1, 1} = [fracturingLoc zeros(length(nodes), 1)]; % first for initial E-field data
-coe = cell(length(count),1);
-ShapeCollect = zeros(num_vertices, count*2);
+coe = cell(length(Count),1);
+ShapeCollect = zeros(num_vertices, Count*2);
 directions = [];
-for i = 2:count + 1
+for i = 2:Count + 1
     % randomShape generation
     % pseudo-random 8 control points detemining ploygon's shape
     [direction, SheetShape] = randomShape(r, center_dim1, center_dim2);
@@ -89,7 +75,7 @@ for i = 2:count + 1
     coe{i - 1, 1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
 
-save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
+save([savePath 'fracCon' num2str(fracCon) '_dataset.mat' ], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
 % --plot test--
 % 

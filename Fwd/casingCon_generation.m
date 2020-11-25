@@ -1,11 +1,10 @@
-
 function [C ,ids, intersectL, casingCon_discrete] = ...
-                casingCon_generation(Length_VH, edgeSize, n, Count, savePath, filename)
-% Length_VH: [lengthV, lengthH] must be integer multiple of edgeSize
-% edgeSize: The edge length
-% n: Discrete to 1/n of the original length of each edge
-% Count: The number of samples to be generated
-% savePath and filename: PATH to save the generated data
+            casingCon_generation(Length_VH, edgeSize, n, Count, savePath)
+% Length_VH: [lengthV, lengthH] must be integer multiple of edgeSize (e.g., [1900, 600])
+% edgeSize: The edge length (e.g., 50)
+% n: Discrete to 1/n of the original length of each edge (e.g., 50)
+% Count: The number of samples to be generated (e.g., 30000)
+% savePath: PATH to save the generated data with blk_info
 
 % dbstop if error
 
@@ -87,5 +86,5 @@ function [C ,ids, intersectL, casingCon_discrete] = ...
         casingCon_discrete(:, 2 * (k - 1) - 1: 2 * (k - 1)) = [zz' 10.^vv'];
     end
     
-    save([savePath filename], 'C', 'casingCon_discrete', 'ids')
+    save([savePath 'casingCon' num2str(intact_casingCon, '%.2e') '_dataset.mat' ], 'C', 'casingCon_discrete', 'ids')
 end
