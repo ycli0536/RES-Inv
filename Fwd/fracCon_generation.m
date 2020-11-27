@@ -1,13 +1,28 @@
 function [directions, ShapeCollect, C, coe] = ...
-            fracCon_generation(num_vertices, fracLoc, fracCon, minSize, Count, savePath)
+            fracCon_generation(num_vertices, fracLoc, fracCon, minSize, Count, Config_file, host)
+%fraCon_generation - blk_info random generation for fracturing forward problem
+%
+% directions: General direction set of fracturing fluid distribution
+% ShapeCollect: Shape set of fracturing fluid distribution
+% C: The cell structure contains blk_info [blkLoc blkCon]
+% coe: Area-averaging coe matrix (fracturing Conductivity distribution matrix = coe * fracCon)
+%
 % num_vertices: The number of vertices of set polygon (e.g., 8)
-% fracLoc: [xmin xmax ymin ymax zmax zmin] the area where fractruing plane
-% is set (e.g., [300 300 -200 200 -1700 -2100])
-% fracCon: A simplified conductivity value of fracturing zone reflecting
-% saturation (e.g., fracCon = 250)
+% fracLoc: [xmin xmax ymin ymax zmax zmin] the area where fractruing plane is set (e.g., [300 300 -200 200 -1700 -2100])
+% fracCon: A simplified conductivity value of fracturing zone reflecting saturation (e.g., fracCon = 250)
 % minSize: Mesh size of core volume area (e.g., [50, 50, 50])
 % Count: The number of samples to be generated (e.g., 30000)
-% savePath: PATH to save the generated data with blk_info
+% Config_file: configuration file with savePath and a filename about generated data with blk_info
+% host: PC or HPC nodes (flag: 'PC' or 'HPC')
+
+PATH = config_parser(Config_file, 'PATH');
+if strcmpi(host, 'PC')
+    savePath = PATH.savePath_PC;
+elseif strcmpi(host, 'HPC')
+    savePath = PATH.savePath_HPC;
+end
+if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+filename = PATH.data_file;
 
 % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
 minSize(3) = - minSize(3);
@@ -75,7 +90,7 @@ for i = 2:Count + 1
     coe{i - 1, 1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
 end
 
-save([savePath 'fracCon' num2str(fracCon) '_dataset.mat' ], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
+save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
 % --plot test--
 % 

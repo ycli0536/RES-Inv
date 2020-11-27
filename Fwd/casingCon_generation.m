@@ -1,10 +1,28 @@
 function [C ,ids, intersectL, casingCon_discrete] = ...
-            casingCon_generation(Length_VH, edgeSize, n, Count, savePath)
+            casingCon_generation(Length_VH, edgeSize, n, Count, Config_file, host)
+%casingCon_generation - blk_info random generation for casing forward problem
+%
+% C: The cell structure contains blk_info [blkLoc blkCon]. It has Count+1 blk_info.
+% ids: [Top boundary of corrosion, Lower boundary of corrosion, Number of corroded edges] information
+% intersectL: Intersection length or length of corrosion
+% casingCon_discrete: Discreted casingCon distribution with a higher resolution based on edgeSize and n parameter
+%
 % Length_VH: [lengthV, lengthH] must be integer multiple of edgeSize (e.g., [1900, 600])
 % edgeSize: The edge length (e.g., 50)
 % n: Discrete to 1/n of the original length of each edge (e.g., 50)
 % Count: The number of samples to be generated (e.g., 30000)
-% savePath: PATH to save the generated data with blk_info
+% Config_file: configuration file with savePath and a filename about
+% generated data with blk_info
+% host: PC or HPC nodes (flag: 'PC' or 'HPC')
+
+PATH = config_parser(Config_file, 'PATH');
+if strcmpi(host, 'PC')
+    savePath = PATH.savePath_PC;
+elseif strcmpi(host, 'HPC')
+    savePath = PATH.savePath_HPC;
+end
+if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+filename = PATH.data_file;
 
 % dbstop if error
 
@@ -26,7 +44,7 @@ function [C ,ids, intersectL, casingCon_discrete] = ...
     C = cell(Count + 1, 1);
     C{1, 1} = [casingLoc casingCon];
     ids = nan(Count, 3);
-    casingCon_discrete = nan((LengthV + LengthH) / (edgeSize / n) + 1, 2 * Count);
+    casingCon_discrete = nan((LengthV + LengthH) / (edgeSize / n) + 1, Count + 1);
     intersectL = nan(length(pseudo_nodes) - 1, Count);
     for k = 2:Count + 1
         
@@ -83,8 +101,8 @@ function [C ,ids, intersectL, casingCon_discrete] = ...
         
         C{k,1} = [casingLoc casingCon];
         ids(k - 1, :) = [Tb, Lb, sum(intersectL(:, k - 1) ~= 0)];
-        casingCon_discrete(:, 2 * (k - 1) - 1: 2 * (k - 1)) = [zz' 10.^vv'];
+        casingCon_discrete(:, k) = 10.^vv';
     end
-    
-    save([savePath 'casingCon' num2str(intact_casingCon, '%.2e') '_dataset.mat' ], 'C', 'casingCon_discrete', 'ids')
+    casingCon_discrete(:, 1) = zz';
+    save([savePath filename ], 'C', 'casingCon_discrete', 'ids')
 end
