@@ -195,3 +195,6 @@ casing_Con_profiles/
 
 # numpy data
 *.npy
+
+# commitizen
+node_modules

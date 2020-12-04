@@ -1,0 +1,29 @@
+{
+  "name": "RSE-Inv",
+  "version": "1.0.0",
+  "description": "Equivalent Resistor Network forward modeling and DL-based Inversion for Electrical Hydraulic Fracturing Monitoring",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "cz-conventional-changelog": "^3.3.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ycli0536/RES-Inv.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ycli0536/RES-Inv/issues"
+  },
+  "homepage": "https://github.com/ycli0536/RES-Inv#readme",
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
