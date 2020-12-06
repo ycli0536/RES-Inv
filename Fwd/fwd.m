@@ -16,7 +16,10 @@ if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
 other = config_parser(Config_file, 'data_processing');
 Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
 
-[nodeX, nodeY, nodeZ, ~, ~, ~, ~, source, dataLoc, ~] = setup(Config_file, 1, flag);
+blk_data = load([savePath PATH.data_file]);
+blk_info = blk_data.C; % Cell data structure
+
+[nodeX, nodeY, nodeZ, ~, ~, ~, source, dataLoc, ~] = setup(Config_file, 1, flag, blk_info);
 % for parfor
 dataLoc_x = dataLoc.X(:);
 dataLoc_y = dataLoc.Y(:);
@@ -32,7 +35,7 @@ Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
 G = formPotentialDifferenceMatrix(edges);
 s = formSourceNearestNodes(nodes,source);
 %% Import E_initial
-[Ex1, Ey1] = E_field(Config_file, flag, 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+[Ex1, Ey1] = E_field(Config_file, flag, blk_info, 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
 
 %% Differential E-field calculation and saving
 start_id = 1:BatchSize:1 + BatchNumber * BatchSize;
@@ -41,7 +44,7 @@ for k = 1:BatchNumber
     data = [];
     tic
     parfor i = start_id(k):end_id
-        [Ex2, Ey2] = E_field(Config_file, i+1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+        [Ex2, Ey2] = E_field(Config_file, flag, blk_info, i, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
         Fx = Ex2 - Ex1;
         Fy = Ey2 - Ey1;
         F_obs = [Fx; Fy];
@@ -59,8 +62,8 @@ for k = 1:BatchNumber
 end
 end
 
-function [Ex, Ey] = E_field(Config_file, flag, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)
-    [~, ~, ~, edgeCon, faceCon, cellCon, ~, ~, ~, E] = setup(Config_file, count, flag);
+function [Ex, Ey] = E_field(Config_file, flag, blk_info, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)
+    [~, ~, ~, edgeCon, faceCon, cellCon, ~, ~, E] = setup(Config_file, count, flag, blk_info);
     
     % (3) total conductance
     ce = Edge2Edge * edgeCon; % on edges
