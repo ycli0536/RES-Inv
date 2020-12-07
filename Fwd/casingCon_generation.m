@@ -68,7 +68,7 @@ filename = PATH.data_file;
         % Equivalent conductivity transform based on current mesh scheme
         casingCon = intact_casingCon * ones(blk_numV + blk_numH, 1);
         control_points = Tb;
-        new_nodes_t = [];
+        new_nodes_t = pseudo_nodes(1);
         for i = 1:length(pseudo_nodes) - 1
             sorted_nodes = sort([pseudo_nodes(i:i+1), Tb, Lb], 'descend');
             index = (sorted_nodes<=pseudo_nodes(i) & sorted_nodes >=pseudo_nodes(i+1)) & (sorted_nodes<=Tb & sorted_nodes>=Lb);
@@ -81,8 +81,8 @@ filename = PATH.data_file;
                 control_points = [control_points control_point];
             end
         end
-        control_points = [control_points Lb];
-        new_nodes = sort([new_nodes_t, control_points], 'descend');
+        control_points = [control_points Lb pseudo_nodes(end)];
+        new_nodes = sort([unique(new_nodes_t), control_points], 'descend');
         % the range of anomalous casingCon in logarithmic domain is [1, log10(intact_casingCon)]
         con_a = 1;
         con_b = log10(intact_casingCon);
@@ -104,5 +104,5 @@ filename = PATH.data_file;
         casingCon_discrete(:, k) = 10.^vv';
     end
     casingCon_discrete(:, 1) = zz';
-    save([savePath filename ], 'C', 'casingCon_discrete', 'ids')
+    save([savePath filename], 'C', 'casingCon_discrete', 'ids')
 end
