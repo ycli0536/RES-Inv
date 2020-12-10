@@ -33,12 +33,13 @@ def read_data(data_format, label_format):
                                             data_file=gConfig['data_file_name'],
                                             num_samples=gConfig['num_samples'],
                                             im_dim=gConfig['im_dim'],
-                                            num_channels=gConfig['num_channels'],
-                                            data_form='raw'
+                                            num_channels=gConfig['num_channels']
                                             )
     elif data_format == '1d':
         train_data = generator.inputData_1d(dataPath=gConfig['datapath'],
-                                            data_file=gConfig['data_file_name']
+                                            data_file=gConfig['data_file_name'],
+                                            num_samples=gConfig['num_samples'],
+                                            vec_dim=gConfig['vec_dim']
                                             )
     else:
         print('--- Wrong input format! ---')
@@ -52,7 +53,9 @@ def read_data(data_format, label_format):
                                           )
     elif label_format == '1d':
         train_target = generator.label_1d(labelPath=gConfig['labelpath'],
-                                          label_file=gConfig['label_file_name']
+                                          label_file=gConfig['label_file_name'],
+                                          num_samples=gConfig['num_samples'],
+                                          label_dim=gConfig['vec_dim']
                                           )
     else:
         print('--- Wrong label format! ---')

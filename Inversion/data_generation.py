@@ -15,39 +15,30 @@ import numpy as np
 from PIL import Image
 from matplotlib.path import Path
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 from scipy.io import loadmat
 
 
 class data_preprocessing(object):
 
-    def inputData_1d(self, dataPath, data_file):
-        train_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
-        feature_range = (0, 1)
-        scaler = MinMaxScaler(feature_range=feature_range)
-        train_data = scaler.fit_transform(train_data)
-        train_data = train_data.reshape((train_data.shape[0], train_data.shape[1], 1))
+    def inputData_1d(self, dataPath, data_file, num_samples, vec_dim):
+        train_data = np.zeros([num_samples, vec_dim, 1])
+        loaded_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
+        train_data[:, :, 0] = loaded_data
         return train_data
 
-    def label_1d(self, labelPath, label_file):
+    def label_1d(self, labelPath, label_file, num_samples, label_dim):
         # load y_train (casingCon_vector)
-        # only train_target need log transform (train_data: log10 data)
-        train_target = np.load(os.path.join(labelPath, label_file))
-        train_target = train_target / np.max(train_target)
-        # feature_range = (0, 1)
-        # scaler = MinMaxScaler(feature_range=feature_range)
-        # train_target = scaler.fit_transform(train_target)
-
-        # set useless data after MinMaxScaler as 1.0 (max)
-        # index = np.where(train_target.max(axis=0) - train_target.min(axis=0) == 0)[0]
-        # for id in index:
-        #     train_target[:, int(id)] = feature_range[1]
-
+        train_data = np.zeros([num_samples, label_dim])
+        shape_data = loadmat(os.path.join(labelPath, label_file))["casingCon_discrete"]
+        # log
+        train_target = np.log10(shape_data[1:, :])
+        # scale to [0, 1]
+        train_target /= np.max(train_target)
         return train_target
 
     def inputData_2d(self, dataPath, data_file,
                      num_samples, im_dim, num_channels,
-                     data_form='raw', subtract_pixel_mean=True):
+                     data_form='log+scale', subtract_pixel_mean=True):
         # load X_train (images)
         if data_form == 'image':
             images = np.zeros([num_samples, im_dim, im_dim, num_channels])
@@ -63,29 +54,12 @@ class data_preprocessing(object):
                 train_data_mean = np.mean(train_data, axis=0)
                 train_data -= train_data_mean
 
-        if data_form == 'raw':
+        if data_form == 'log+scale': # log amplitudes, scaled angles
             amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
-            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
+            ang_data = loadmat(os.path.join(dataPath, data_file))["data_scaled_ang"]
             train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
             train_data[:, :, :, 0] = amp_data
             train_data[:, :, :, 1] = ang_data
-
-        if data_form == 'HSV+amp':
-            amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
-            ang_data = loadmat(os.path.join(dataPath, data_file))["data_log_ang"]
-            train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
-            images = np.zeros([num_samples, im_dim, im_dim, 3])
-            for i, img_name in enumerate(os.listdir(imagePath)):
-                image_path = os.path.join(imagePath, img_name)
-                img = Image.open(image_path)
-                img_data = np.asarray(img, np.uint8)
-                images[i, :, :, :] = img_data
-            train_data[:, :, :, :3] = images.astype(np.float32) / 255.
-            # If subtract pixel mean is enabled
-            if subtract_pixel_mean:
-                train_data_mean = np.mean(train_data, axis=0)
-                train_data -= train_data_mean
-            train_data[:, :, :, 4] = amp_data
 
         return train_data
 

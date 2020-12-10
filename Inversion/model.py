@@ -345,7 +345,7 @@ def fcn_2d_1d(input_shape, num_filters_in=16):
 
     drop = Dropout(rate=dr)(dense)
 
-    output = Dense(gConfig['target_value_length'], activation='relu')(drop)
+    output = Dense(gConfig['vec_dim'], activation='relu')(drop)
 
     model = Model(inputs=inputs, outputs=output)
 
