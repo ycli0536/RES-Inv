@@ -44,7 +44,7 @@ filename = PATH.data_file;
     C = cell(Count + 1, 1);
     C{1, 1} = [casingLoc casingCon];
     ids = nan(Count, 3);
-    casingCon_discrete = nan((LengthV + LengthH) / (edgeSize / n) + 1, Count + 1);
+    casingCon_discrete = nan(Count + 1, (LengthV + LengthH) / (edgeSize / n) + 1);
     intersectL = nan(length(pseudo_nodes) - 1, Count);
     for k = 2:Count + 1
         
@@ -101,8 +101,8 @@ filename = PATH.data_file;
         
         C{k,1} = [casingLoc casingCon];
         ids(k - 1, :) = [Tb, Lb, sum(intersectL(:, k - 1) ~= 0)];
-        casingCon_discrete(:, k) = 10.^vv';
+        casingCon_discrete(k, :) = 10.^vv;
     end
-    casingCon_discrete(:, 1) = zz';
+    casingCon_discrete(1, :) = zz;
     save([savePath filename], 'C', 'casingCon_discrete', 'ids')
 end
