@@ -20,20 +20,21 @@ from scipy.io import loadmat
 
 class data_preprocessing(object):
 
-    def inputData_1d(self, dataPath, data_file, num_samples, vec_dim):
-        train_data = np.zeros([num_samples, vec_dim, 1])
+    def inputData_1d(self, dataPath, data_file, num_samples, vec_dim, num_channels=1):
+        train_data = np.zeros([num_samples, vec_dim, num_channels])
         loaded_data = loadmat(os.path.join(dataPath, data_file))["data_output"]
         train_data[:, :, 0] = loaded_data
         return train_data
 
-    def label_1d(self, labelPath, label_file, num_samples, label_dim):
+    def label_1d(self, labelPath, label_file, num_samples, label_dim, num_channels=1):
         # load y_train (casingCon_vector)
-        train_data = np.zeros([num_samples, label_dim])
-        shape_data = loadmat(os.path.join(labelPath, label_file))["casingCon_discrete"]
+        train_target = np.zeros([num_samples, label_dim, num_channels])
+        curve_data = loadmat(os.path.join(labelPath, label_file))["casingCon_discrete"]
         # log
-        train_target = np.log10(shape_data[1:, :])
+        data_CasingCurve = np.log10(curve_data[1:, :])
         # scale to [0, 1]
-        train_target /= np.max(train_target)
+        data_CasingCurve /= np.max(data_CasingCurve)
+        train_target[:, :, 0] = data_CasingCurve
         return train_target
 
     def inputData_2d(self, dataPath, data_file,
@@ -55,9 +56,9 @@ class data_preprocessing(object):
                 train_data -= train_data_mean
 
         if data_form == 'log+scale': # log amplitudes, scaled angles
+            train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
             amp_data = loadmat(os.path.join(dataPath, data_file))["data_log_amp"]
             ang_data = loadmat(os.path.join(dataPath, data_file))["data_scaled_ang"]
-            train_data = np.zeros([num_samples, im_dim, im_dim, num_channels])
             train_data[:, :, :, 0] = amp_data
             train_data[:, :, :, 1] = ang_data
 
@@ -67,7 +68,7 @@ class data_preprocessing(object):
                  label_dim, num_channels):
         shape_data = loadmat(os.path.join(labelPath, label_file))["ShapeCollect"]
         fracLoc = loadmat(os.path.join(labelPath, label_file))["fracLoc"]
-        data_FracturingShape = np.zeros([num_samples, label_dim, label_dim, num_channels])
+        train_target = np.zeros([num_samples, label_dim, label_dim, num_channels])
 
         # verts.shape = (9, num_samples * 2)
         verts = np.append(shape_data, shape_data[0].reshape(1, shape_data.shape[1]), axis=0)
@@ -83,9 +84,8 @@ class data_preprocessing(object):
             poly_verts = verts[:, 2 * (i + 1): 2 * ((i + 1) + 1)] # + 1 to skip first Shape data (none)
             path = Path(poly_verts)
             grid = path.contains_points(points)
-            grid = grid.reshape((dim2, dim1))
-            data_FracturingShape[i, :, :, 0] = grid.astype(np.float32)
-        train_target = data_FracturingShape
+            data_FracturingShape = grid.reshape((dim2, dim1))
+            train_target[i, :, :, 0] = data_FracturingShape.astype(np.float32)
         return train_target
 
     def Split(self, train_data, train_target):
