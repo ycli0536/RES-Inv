@@ -140,15 +140,45 @@ def ave_pooling(arr, nrows, ncols):
     return result
 
 
-def coe_generation(input_data, dim=8):
+def coe_generation_2d(input_data, dim=8):
+    """Dataset of fracturing coe matching the actual mesh in forward modeling
+
+    default num_label_channels = 1
+
+    default size of each label: (8, 8)
+    """
     num_samples = input_data.shape[0]
     data_dim = input_data.shape[1]
     coe = np.empty([num_samples, dim, dim])
     for i in range(num_samples):
         coe[i] = ave_pooling(input_data[i], nrows=int(data_dim / dim), ncols=int(data_dim / dim))
-    print('coe matrix shape is', coe.shape)
+    print('Size of FracCon coe dataset\'s: ', coe.shape)
     return coe
 
+def casingCon_generation(input_data, dim=50, edgeSize=50, max_casingCon=1.5e5):
+    """Dataset of casingCon matching the actual mesh in forward modeling
+
+    default num_label_channels = 1
+
+    default size of each label: 50
+
+    """
+    num_samples = input_data.shape[0]
+    vec_length = input_data.shape[1]
+    casingCon = np.empty([num_samples, dim])
+    # dim * edgeSize = casing_length
+    # dx = casing_length / (vec_length - 1)
+    dx = int((dim * edgeSize) / (vec_length - 1))
+    n = int((vec_length - 1) / dim) # edgeSize / dx
+    print(n, dx)
+    input_data_log = input_data * np.log10(max_casingCon)
+    print(input_data_log.shape)
+    for i in range(num_samples):
+        for j in range(dim):
+            eq_anomalous_casingRes = np.abs(np.trapz(1 / np.power(10, input_data_log[i][n*j: n*(j+1)+1]), dx=dx))
+            casingCon[i][j] = edgeSize / eq_anomalous_casingRes
+    print('Size of CasingCon dataset\'s: ', casingCon.shape)
+    return casingCon
 
 def train():
     """ U-net neural network training
@@ -321,10 +351,13 @@ if __name__ == '__main__':
                          model_path=gConfig['predictionpath'],
                          model_count=gConfig['model_id_count'])
 
-        # save test_label_coe and pred_label_coe for calculate data misfit
-        test_label_coe = coe_generation(input_data=np.squeeze(y_test, axis=3), dim=8)
-        pred_label_coe = coe_generation(input_data=np.squeeze(y_pred, axis=3), dim=8)
-
-        print('Save coe mat files for datamisfit at %s.' % (gConfig['predictionpath']))
-        savemat(os.path.join(gConfig['predictionpath'], 'test_label_coe.mat'), {'test_label_coe': test_label_coe})
-        savemat(os.path.join(gConfig['predictionpath'], 'pred_label_coe.mat'), {'pred_label_coe': pred_label_coe})
+        # save test_label and pred_label matching the actual mesh in forward modeling for calculate data misfit
+        if gConfig['label_format'] == '2d':
+            test_label = coe_generation_2d(input_data=np.squeeze(y_test, axis=3), dim=8)
+            pred_label = coe_generation_2d(input_data=np.squeeze(y_pred, axis=3), dim=8)
+        elif gConfig['label_format'] == '1d':
+            test_label = casingCon_generation(input_data=np.squeeze(y_test, axis=2), dim=50)
+            pred_label = casingCon_generation(input_data=np.squeeze(y_pred, axis=2), dim=50)
+        print('Save actual label mat files for datamisfit calculation at %s.' % (gConfig['predictionpath']))
+        savemat(os.path.join(gConfig['predictionpath'], 'test_label.mat'), {'test_label': test_label})
+        savemat(os.path.join(gConfig['predictionpath'], 'pred_label.mat'), {'pred_label': pred_label})
