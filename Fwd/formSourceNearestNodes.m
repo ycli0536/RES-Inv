@@ -11,16 +11,15 @@
 %     Find the nearest node and snap to it.
 function s = formSourceNearestNodes(nodes,source)
 
-Nsource = size(source,1);      
+    Nsource = size(source,1);      
 
-Nnodes = size(nodes,1);      
-s = zeros(Nnodes,1);
+    Nnodes = size(nodes,1);      
+    s = zeros(Nnodes,1);
 
-for i = 1:Nsource
-    dist = (nodes(:,1) - source(i,1)).^2 + (nodes(:,2) - source(i,2)).^2 + (nodes(:,3) - source(i,3)).^2;
-    [~, nodeInd] = min(dist); % snap to nearest node
-    s(nodeInd) = source(i,4);
-end
-
+    for i = 1:Nsource
+        dist = (nodes(:,1) - source(i,1)).^2 + (nodes(:,2) - source(i,2)).^2 + (nodes(:,3) - source(i,3)).^2;
+        [~, nodeInd] = min(dist); % snap to nearest node
+        s(nodeInd) = source(i,4);
+    end
 
 end

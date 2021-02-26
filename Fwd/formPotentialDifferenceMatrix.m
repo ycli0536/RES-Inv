@@ -13,14 +13,13 @@
 %     The assignment of starting/ending nodes is pre-defined in edges list.
 function G = formPotentialDifferenceMatrix(edges)
 
-Nnodes = max(max(edges)); % # of nodes
-Nedges = size(edges,1); % # of edges
+    Nnodes = max(max(edges)); % # of nodes
+    Nedges = size(edges,1); % # of edges
 
-% form "potential difference" (gradient) operator
-I = kron(1:Nedges,[1; 1]);
-J = edges';
-S = kron(ones(1,Nedges),[1; -1]);
-G = sparse(I(:),J(:),S(:),Nedges,Nnodes); 
-
+    % form "potential difference" (gradient) operator
+    I = kron(1:Nedges,[1; 1]);
+    J = edges';
+    S = kron(ones(1,Nedges),[1; -1]);
+    G = sparse(I(:),J(:),S(:),Nedges,Nnodes); 
 
 end

@@ -5,6 +5,6 @@ function globalInd = DirectionalIndex2GlobalIndex(Nx,Ny,Nz,directionalxyz)
 % directionalxyz: 3-column matrix, each column is the directional index of
 % the cell
 
-globalInd = (directionalxyz(:,2)-1)*Nx*Nz + (directionalxyz(:,1)-1)*Nz + directionalxyz(:,3);
+    globalInd = (directionalxyz(:,2)-1)*Nx*Nz + (directionalxyz(:,1)-1)*Nz + directionalxyz(:,3);
 
 end

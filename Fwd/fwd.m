@@ -1,65 +1,65 @@
+% FUNCTION: fwd(Cores_num, BatchNumber, BatchSize, Config_file, flag)
+%
+% INPUT
+%   Cores_num: The number of cores used on each node
+%   BatchNumber and BatchSize: sample number = BatchNumber * BatchSize
+%   Config_file: Configuration file
+%   flag: 'fracturing' or 'casing'
 function fwd(Cores_num, BatchNumber, BatchSize, Config_file, flag)
-% Cores_num: The number of cores used on each node
-% BatchNumber and BatchSize: sample number = BatchNumber * BatchSize
-% Config_file: Configuration file
-% flag: 'fracturing' or 'casing'
-% 
-%% initial
-parpool(Cores_num);
 
-PATH = config_parser(Config_file, 'PATH');
-savePath = PATH.savePath_HPC;
-dataPath = PATH.dataPath_HPC;
-if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
-if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
+    %% initial
+    parpool(Cores_num);
 
-other = config_parser(Config_file, 'data_processing');
-Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
+    PATH = config_parser(Config_file, 'PATH');
+    savePath = PATH.savePath_HPC;
+    dataPath = PATH.dataPath_HPC;
+    if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+    if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
 
-blk_data = load([savePath PATH.data_file]);
-blk_info = blk_data.C; % Cell data structure
+    other = config_parser(Config_file, 'data_processing');
+    Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
 
-[nodeX, nodeY, nodeZ, ~, ~, ~, source, dataLoc, ~] = setup(Config_file, 1, flag, blk_info);
-% for parfor
-dataLoc_x = dataLoc.X(:);
-dataLoc_y = dataLoc.Y(:);
+    blk_data = load([savePath PATH.data_file]);
+    blk_info = blk_data.C; % Cell data structure
 
-% (1) get connectivity
-[nodes, edges, lengths, faces, cells] = ...
-    formRectMeshConnectivity_t(nodeX, nodeY, nodeZ);
-% (2) get matrices
-Edge2Edge = formEdge2EdgeMatrix_t(edges,lengths);
-Face2Edge = formFace2EdgeMatrix_t(edges,lengths,faces);
-Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
+    [nodeX, nodeY, nodeZ, ~, ~, ~, source, dataLoc, ~] = setup(Config_file, 1, flag, blk_info);
+    % for parfor
+    dataLoc_x = dataLoc.X(:);
+    dataLoc_y = dataLoc.Y(:);
 
-G = formPotentialDifferenceMatrix(edges);
-s = formSourceNearestNodes(nodes,source);
-%% Import E_initial
-[Ex1, Ey1] = E_field(Config_file, flag, blk_info, 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+    % (1) get connectivity
+    [nodes, edges, lengths, faces, cells] = ...
+        formRectMeshConnectivity_t(nodeX, nodeY, nodeZ);
+    % (2) get matrices
+    Edge2Edge = formEdge2EdgeMatrix_t(edges,lengths);
+    Face2Edge = formFace2EdgeMatrix_t(edges,lengths,faces);
+    Cell2Edge = formCell2EdgeMatrix_t(edges,lengths,faces,cells);
 
-%% Differential E-field calculation and saving
-start_id = 1:BatchSize:1 + BatchNumber * BatchSize;
-for k = 1:BatchNumber
-    end_id = start_id(k) + BatchSize - 1;
-    data = [];
-    tic
-    parfor i = start_id(k):end_id
-        [Ex2, Ey2] = E_field(Config_file, flag, blk_info, i, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
-        Fx = Ex2 - Ex1;
-        Fy = Ey2 - Ey1;
-        F_obs = [Fx; Fy];
-%         dE_total = repmat(sqrt(Fx.^2 + Fy.^2), 2, 1);
-%         F_obs = F_obs + dE_total*Noise_level.*randn(length(F_obs), 1);
-        F_obs = F_obs + F_obs * Noise_level .* randn(length(F_obs), 1);
-        data = [data; F_obs'];
-    end
-    toc
-    if Noise_level ~= 0
-        save([dataPath 'Noise' num2str(Noise_level) '_' PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
-    else
+    G = formPotentialDifferenceMatrix(edges);
+    s = formSourceNearestNodes(nodes,source);
+    %% Import E_initial
+    [Ex1, Ey1] = E_field(Config_file, flag, blk_info, 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+
+    %% Differential E-field calculation and saving
+    start_id = 1: BatchSize:1 + BatchNumber * BatchSize;
+    for k = 1: BatchNumber
+        end_id = start_id(k) + BatchSize - 1;
+        data = [];
+        tic
+        parfor i = start_id(k):end_id
+            [Ex2, Ey2] = E_field(Config_file, flag, blk_info, i + 1, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge);
+            Fx = Ex2 - Ex1;
+            Fy = Ey2 - Ey1;
+            F_obs = [Fx; Fy];
+    %         dE_total = repmat(sqrt(Fx.^2 + Fy.^2), 2, 1);
+    %         F_obs = F_obs + dE_total*Noise_level.*randn(length(F_obs), 1);
+            F_obs = F_obs + F_obs * Noise_level .* randn(length(F_obs), 1);
+            data = [data; F_obs'];
+        end
+        toc
+
         save([dataPath PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
     end
-end
 end
 
 function [Ex, Ey] = E_field(Config_file, flag, blk_info, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)

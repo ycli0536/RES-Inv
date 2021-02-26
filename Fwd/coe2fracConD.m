@@ -36,7 +36,7 @@ function coe2fracConD(coePath, fracLoc, fracCon, minSize, count, Config_file, ho
     [dim1_4, dim2_4] = meshgrid(fracLoc(index(1,1)):minSize(index(3,1)):fracLoc(index(1,2))-minSize(index(3,1)), ...
                                 fracLoc(index(2,1))+minSize(index(3,2)):minSize(index(3,2)):fracLoc(index(2,2)));
     nodes = [dim1_1(:) dim1_2(:) dim1_3(:) dim1_4(:) dim2_1(:) dim2_2(:) dim2_3(:) dim2_4(:)];
-    
+
     meshlist = [];
     fracturingLoc = repmat(fracLoc, length(nodes), 1);
     for i = 1:length(nodes)

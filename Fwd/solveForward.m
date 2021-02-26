@@ -21,40 +21,37 @@
 function [potentials, potentialDiffs, currents, efields] = ...
                                                 solveForward(G,c,s,lengths)
 
-[Nedges, Nnodes] = size(G);
-C = spdiags(c,0,Nedges,Nedges);
+    [Nedges, Nnodes] = size(G);
+    C = spdiags(c,0,Nedges,Nedges);
 
-E = sparse(1,1,1,Nnodes,Nnodes,1);
-A = G' * C * G + E;
+    E = sparse(1,1,1,Nnodes,Nnodes,1);
+    A = G' * C * G + E;
 
-% direct solver
-% L = chol(A,'lower'); 
-% y = L \ -s;
-% potentials = L' \ y;
+    % direct solver
+    % L = chol(A,'lower'); 
+    % y = L \ -s;
+    % potentials = L' \ y;
 
-% auto/iterative solver
-% t0 = tic;
-% dA = decomposition(A);
-% potentials = dA \ s; 
-potentials = A \ s;
-% toc(t0)
+    % auto/iterative solver
+    % t0 = tic;
+    % dA = decomposition(A);
+    % potentials = dA \ s; 
+    potentials = A \ s;
+    % toc(t0)
 
+    % save('A', 'A')
+    % save('s', 's')
 
-% save('A', 'A')
-% save('s', 's')
+    % compute potential difference (E field) on all edges
+    potentialDiffs = G * potentials;
 
-% compute potential difference (E field) on all edges
-potentialDiffs = G * potentials;
+    % compute current on all edges
+    currents = C * potentialDiffs;
+                                                    
+    if isempty(lengths)
+        efields = [];
+    else
+        efields = potentialDiffs ./ lengths;
+    end
 
-% compute current on all edges
-currents = C * potentialDiffs;
-                                                
-if isempty(lengths)
-    efields = [];
-else
-    efields = potentialDiffs ./ lengths;
-end                                      
-                                                
-                                                
-                                                
 end

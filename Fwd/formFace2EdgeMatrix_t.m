@@ -25,6 +25,5 @@ function Face2Edge = formFace2EdgeMatrix_t(edges,lengths,faces)
         
         S=lengths(edge2)./2./lengths(edge1);
         Face2Edge=sparse(edge1,A(:,2),S,Nedges,Nfaces);
-        
-        
+
 end
