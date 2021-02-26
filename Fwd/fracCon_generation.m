@@ -1,5 +1,5 @@
 function [directions, ShapeCollect, C, coe] = ...
-            fracCon_generation(num_vertices, fracLoc, fracCon, minSize, Count, Config_file, host)
+            fracCon_generation(randomShape, num_vertices, fracLoc, fracCon, minSize, Count, Config_file, host)
 %fraCon_generation - blk_info random generation for fracturing forward problem
 %
 % directions: General direction set of fracturing fluid distribution
@@ -7,6 +7,7 @@ function [directions, ShapeCollect, C, coe] = ...
 % C: The cell structure contains blk_info [blkLoc blkCon]
 % coe: Area-averaging coe matrix (fracturing Conductivity distribution matrix = coe * fracCon)
 %
+% randomShape: Rule of random sheet shape generator
 % num_vertices: The number of vertices of set polygon (e.g., 8)
 % fracLoc: [xmin xmax ymin ymax zmax zmin] the area where fractruing plane is set (e.g., [300 300 -200 200 -1700 -2100])
 % fracCon: A simplified conductivity value of fracturing zone reflecting saturation (e.g., fracCon = 250)
@@ -74,10 +75,19 @@ ShapeCollect = zeros(num_vertices, Count*2);
 directions = [];
 for i = 2:Count + 1
     % randomShape generation
-    % pseudo-random 8 control points detemining ploygon's shape
-    [direction, SheetShape] = randomShape(r, center_dim1, center_dim2);
+    if strcmpi(randomShape, 'ellipse')
+        SheetShape = addRandomEllipses([50, 150], [80, 180], [center_dim1, center_dim2], 15, num_vertices);
+    elseif strcmpi(randomShape, 'rectangle')
+        SheetShape = addRandomRectangles([80, 260], [80, 260], [center_dim1, center_dim2], 20);
+    elseif strcmpi(randomShape, 'polygon8')
+        % pseudo-random 8 control points detemining ploygon's shape
+        [~, SheetShape] = randomShape(r, center_dim1, center_dim2);
+    elseif strcmpi(randomShape, 'polygonN')
+        SheetShape = addRandomShapes([30, 150], [center_dim1, center_dim2], num_vertices, 30);
+    end
+
     ShapeCollect(:, 2 * i - 1: 2 * i) = SheetShape;
-    directions = [directions; direction];
+    % directions = [directions; direction];
     % shape2coe
     Sheetpolygon = polyshape(SheetShape(:,1), SheetShape(:,2));
     fracturingCon = nan * ones(length(nodes), 1);
@@ -100,14 +110,14 @@ save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', '
 %     axis equal
 %     axis([-200 200 -2100 -1700])
 % end
-% 
+% % 
 % k = 5;
-% plot(polyshape(ShapeCollect(:, 2 * k - 1), ShapeCollect(:, 2 * k)))
+% plot(polyshape(ShapeCollect(:, 2 * k + 1), ShapeCollect(:, 2 * (k + 1))))
 % figure; imagesc((-175:50:175), (-1725:-50:-2075), coe{k,1} * fracCon);
 % axis equal
 % axis tight
 % set(gca,'ydir','normal');
-% disp(directions(k))
+% % disp(directions(k))
 
 end
 
