@@ -9,7 +9,7 @@ function Preprocessing_2Dinput(Config_file)
 
 
     dataPath = PATH.fwd_dataPath; % E-field data path
-    labelPath = PATH.labelPath; % amp_ang/images path
+    labelPath = PATH.inv_dataPath; % amp_ang/images path
 
     if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
 
