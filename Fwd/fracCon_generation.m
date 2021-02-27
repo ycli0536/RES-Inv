@@ -10,24 +10,21 @@
 % fracCon: A simplified conductivity value of fracturing zone reflecting saturation (e.g., fracCon = 250)
 % minSize: Mesh size of core volume area (e.g., [50, 50, 50])
 % Count: The number of samples to be generated (e.g., 30000)
-% Config_file: configuration file with savePath and a filename about generated data with blk_info
-% host: PC or HPC nodes (flag: 'PC' or 'HPC')
+% Config_file: configuration file with labelPath and a filename about generated lables with blk_info
 % OUTPUT
 % directions: General direction set of fracturing fluid distribution
 % ShapeCollect: Shape set of fracturing fluid distribution
 % C: The cell structure contains blk_info [blkLoc blkCon]
 % coe: Area-averaging coe matrix (fracturing Conductivity distribution matrix = coe * fracCon)
 function [directions, ShapeCollect, C, coe] = ...
-            fracCon_generation(randomShape, num_vertices, fracLoc, fracCon, minSize, Count, Config_file, host)
+            fracCon_generation(randomShape, num_vertices, fracLoc, fracCon, minSize, Count, Config_file)
 
     PATH = config_parser(Config_file, 'PATH');
-    if strcmpi(host, 'PC')
-        savePath = PATH.savePath_PC;
-    elseif strcmpi(host, 'HPC')
-        savePath = PATH.savePath_HPC;
-    end
-    if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
-    filename = PATH.data_file;
+
+    labelPath = PATH.labelPath;
+
+    if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
+    filename = PATH.label_file;
 
     % dx = minSize(1); dy = minSize(2); dz = -minSize(3); % negative number
     minSize(3) = - minSize(3);
@@ -104,7 +101,7 @@ function [directions, ShapeCollect, C, coe] = ...
         coe{i - 1, 1} = reshape(fracturingCon / fracCon, [2*n 2*n]);
     end
 
-    save([savePath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
+    save([labelPath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
 
     % --plot test--
     % 

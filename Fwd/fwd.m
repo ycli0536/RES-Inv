@@ -11,15 +11,16 @@ function fwd(Cores_num, BatchNumber, BatchSize, Config_file, flag)
     parpool(Cores_num);
 
     PATH = config_parser(Config_file, 'PATH');
-    savePath = PATH.savePath_HPC;
-    dataPath = PATH.dataPath_HPC;
-    if exist(savePath, 'dir') == 0;     mkdir(savePath);     end
+    labelPath = PATH.labelPath;
+    dataPath = PATH.fwd_dataPath;
+    backupPath = PATH.backupPath;
+    if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
     if exist(dataPath, 'dir') == 0;     mkdir(dataPath);     end
 
     other = config_parser(Config_file, 'data_processing');
     Noise_level = other.noise_level; % add Gauss noise (0%, 5%, 10%, 15%, 20%)
 
-    blk_data = load([savePath PATH.data_file]);
+    blk_data = load([labelPath PATH.label_file]);
     blk_info = blk_data.C; % Cell data structure
 
     [nodeX, nodeY, nodeZ, ~, ~, ~, source, dataLoc, ~] = setup(Config_file, 1, flag, blk_info);
@@ -60,6 +61,7 @@ function fwd(Cores_num, BatchNumber, BatchSize, Config_file, flag)
 
         save([dataPath PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
     end
+    copyfile(dataPath, backupPath)
 end
 
 function [Ex, Ey] = E_field(Config_file, flag, blk_info, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)

@@ -3,18 +3,13 @@
 % INPUT
 %   Config_file: configuration file with savePath, labelPath, and blk type
 %   (casing or fracturing)
-%   host: PC or HPC nodes (flag: 'PC' or 'HPC')
-function Preprocessing_2Dinput(Config_file, host)
+function Preprocessing_2Dinput(Config_file)
 
-PATH = config_parser(Config_file, 'PATH');
+    PATH = config_parser(Config_file, 'PATH');
 
-    if strcmpi(host, 'PC')
-        dataPath = PATH.dataPath_PC; % E-field data path
-        labelPath = PATH.targetPath_PC; % amp_ang/images path
-    elseif strcmpi(host, 'HPC')
-        dataPath = PATH.dataPath_HPC; % E-field data path
-        labelPath = PATH.targetPath_HPC; % amp_ang/images path
-    end
+
+    dataPath = PATH.fwd_dataPath; % E-field data path
+    labelPath = PATH.labelPath; % amp_ang/images path
 
     if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
 
@@ -29,9 +24,9 @@ PATH = config_parser(Config_file, 'PATH');
     filename = [PATH.data_prefix '_logAmp_scaledAng.mat'];
     log_scaled_2d(labelPath, filename, data)
 
-    end
+end
 
-    function log_scaled_2d(savePath, filename, data)
+function log_scaled_2d(savePath, filename, data)
         dataGridX = -500:20:500;
         dataGridY = -500:20:500;
         [dataLocX, dataLocY] = meshgrid(dataGridX, dataGridY);
