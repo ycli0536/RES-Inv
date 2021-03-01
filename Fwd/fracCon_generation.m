@@ -22,6 +22,7 @@ function [directions, ShapeCollect, C, coe] = ...
     PATH = config_parser(Config_file, 'PATH');
 
     labelPath = PATH.labelPath;
+    backupPath = PATH.backupPath;
 
     if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
     filename = PATH.label_file;
@@ -102,6 +103,10 @@ function [directions, ShapeCollect, C, coe] = ...
     end
 
     save([labelPath filename], 'ShapeCollect', 'C', 'coe', 'directions', 'fracLoc', 'fracCon');
+
+    % backup labels
+    backup_labelPath = [backupPath 'labels/'];
+    copyfile(labelPath, backup_labelPath);
 
     % --plot test--
     % 

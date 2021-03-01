@@ -61,7 +61,10 @@ function fwd(Cores_num, BatchNumber, BatchSize, Config_file, flag)
 
         save([dataPath PATH.data_prefix '#' num2str(k, '%02d') '.mat'], 'data');
     end
-    copyfile(dataPath, backupPath)
+
+    % backup data
+    backup_fwd_dataPath = [backupPath 'E_field_data/'];
+    copyfile(dataPath, backup_fwd_dataPath);
 end
 
 function [Ex, Ey] = E_field(Config_file, flag, blk_info, count, nodeX, nodeY, nodeZ, G, s, lengths, Edge2Edge, Face2Edge, Cell2Edge)

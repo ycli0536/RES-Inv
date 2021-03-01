@@ -7,9 +7,9 @@ function Preprocessing_2Dinput(Config_file)
 
     PATH = config_parser(Config_file, 'PATH');
 
-
     dataPath = PATH.fwd_dataPath; % E-field data path
     labelPath = PATH.inv_dataPath; % amp_ang/images path
+    backupPath = PATH.backupPath;
 
     if exist(labelPath, 'dir') == 0;     mkdir(labelPath);     end
 
@@ -23,6 +23,10 @@ function Preprocessing_2Dinput(Config_file)
     % log amp and [-1, 1] ang
     filename = [PATH.data_prefix '_logAmp_scaledAng.mat'];
     log_scaled_2d(labelPath, filename, data)
+
+    % backup data
+    backup_inv_dataPath = [backupPath 'amp_ang/'];
+    copyfile(labelPath, backup_inv_dataPath);
 
 end
 
